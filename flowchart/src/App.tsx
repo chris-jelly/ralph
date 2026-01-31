@@ -44,7 +44,7 @@ const allSteps: { id: string; label: string; description: string; phase: Phase }
   { id: '5', label: 'Implements it', description: 'Writes code, runs tests', phase: 'loop' },
   { id: '6', label: 'Commits changes', description: 'If tests pass', phase: 'loop' },
   { id: '7', label: 'Updates prd.json', description: 'Sets passes: true', phase: 'loop' },
-  { id: '8', label: 'Logs to progress.txt', description: 'Saves learnings', phase: 'loop' },
+  { id: '8', label: 'Logs to plans/progress.txt', description: 'Saves learnings', phase: 'loop' },
   { id: '9', label: 'More stories?', description: '', phase: 'decision' },
   // Exit
   { id: '10', label: 'Done!', description: 'All stories complete', phase: 'done' },
