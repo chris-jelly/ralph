@@ -2,7 +2,7 @@
 
 ![Ralph](ralph.webp)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools ([Amp](https://ampcode.com) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code)) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
+Ralph is an autonomous AI agent loop that runs AI coding tools ([Amp](https://ampcode.com) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code)) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `plans/progress.txt`, and `plans/prd.json`.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -18,7 +18,26 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Setup
 
-### Option 1: Copy to your project
+### Option 1: Automated Installation (Recommended)
+
+Run the installer to set up Ralph in your project:
+
+```bash
+# Clone Ralph (if not already done)
+git clone https://github.com/snarktank/ralph.git
+cd ralph
+
+# Run the installer
+./ralph/install.sh --target /path/to/your/project
+```
+
+Or run interactively to be guided through the setup:
+
+```bash
+./ralph/install.sh
+```
+
+### Option 2: Copy to your project (Manual)
 
 Copy the ralph files into your project:
 
@@ -125,8 +144,8 @@ Ralph will:
 3. Implement that single story
 4. Run quality checks (typecheck, tests)
 5. Commit if checks pass
-6. Update `prd.json` to mark story as `passes: true`
-7. Append learnings to `progress.txt`
+6. Update `plans/prd.json` to mark story as `passes: true`
+7. Append learnings to `plans/progress.txt`
 8. Repeat until all stories pass or max iterations reached
 
 ## Key Files
@@ -138,7 +157,7 @@ Ralph will:
 | `CLAUDE.md` | Prompt template for Claude Code |
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
-| `progress.txt` | Append-only learnings for future iterations |
+| `plans/progress.txt` | Append-only learnings for future iterations |
 | `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
 | `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
 | `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
@@ -164,8 +183,8 @@ npm run dev
 
 Each iteration spawns a **new AI instance** (Amp or Claude Code) with clean context. The only memory between iterations is:
 - Git history (commits from previous iterations)
-- `progress.txt` (learnings and context)
-- `prd.json` (which stories are done)
+- `plans/progress.txt` (learnings and context)
+- `plans/prd.json` (which stories are done)
 
 ### Small Tasks
 
@@ -212,10 +231,10 @@ Check current state:
 
 ```bash
 # See which stories are done
-cat prd.json | jq '.userStories[] | {id, title, passes}'
+cat plans/prd.json | jq '.userStories[] | {id, title, passes}'
 
 # See learnings from previous iterations
-cat progress.txt
+cat plans/progress.txt
 
 # Check git history
 git log --oneline -10
@@ -230,7 +249,7 @@ After copying `prompt.md` (for Amp) or `CLAUDE.md` (for Claude Code) to your pro
 
 ## Archiving
 
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
+Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `plans/archive/YYYY-MM-DD-feature-name/`.
 
 ## References
 

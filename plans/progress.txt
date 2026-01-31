@@ -1,0 +1,39 @@
+## Codebase Patterns
+- Installation scripts should persist user choices (e.g. tool selection) to a config file (e.g. `ralph.conf`) for other scripts to use.
+- When testing installation scripts (`install.sh`), use a temporary directory with `git init` to simulate a target repo.
+- Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
+
+## 2026-01-31 - US-004
+- Created `ralph/doctor.sh` validation script.
+- Updated `ralph/install.sh` to install `doctor.sh`.
+- Updated `ralph/ralph.sh` to support `--help` for verification.
+- Files changed: `ralph/doctor.sh`, `ralph/install.sh`, `ralph/ralph.sh`
+- **Learnings for future iterations:**
+  - `doctor.sh` must be able to locate the installation relative to itself or the repo root.
+  - `install.sh` must be updated whenever a new script is added to the distribution.
+  - Scripts should support `--help` to allow basic runtime verification without side effects.
+---
+
+## 2026-01-31 - US-005
+- Implemented interactive mode in `ralph/install.sh` to prompt for missing arguments.
+- Added automatic `README.md` generation in the target `scripts/ralph` directory.
+- Added success message with clear next steps.
+- Files changed: `ralph/install.sh`
+- **Learnings for future iterations:**
+  - `install.sh` can be tested by creating a temporary directory and running it with explicit flags.
+  - Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
+  - `README.md` generation using `cat << EOF` allows for variable substitution, making documentation dynamic.
+---
+
+## 2026-01-31 - US-006
+- Validated installation with opencode, claude, and codex tools using temporary repositories.
+- Updated `ralph/install.sh` to create a `ralph.conf` file to persist tool selection.
+- Updated `ralph/ralph.sh` and `ralph/doctor.sh` to read from `ralph.conf`.
+- Updated `README.md` with automated installation instructions.
+- Updated `AGENTS.md` with list of installation files.
+- Files changed: `ralph/install.sh`, `ralph/doctor.sh`, `ralph/ralph.sh`, `README.md`, `AGENTS.md`
+- **Learnings for future iterations:**
+  - Installation scripts should persist configuration (like chosen tool) to a config file so other scripts (doctor, runner) can use it without environment variables.
+  - `command -v` is useful for checking if a tool exists in the PATH.
+  - When testing installation scripts, it is crucial to verify that the installed environment behaves as expected (e.g., uses the correct tool).
+---

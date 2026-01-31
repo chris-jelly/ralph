@@ -4,10 +4,16 @@
 
 set -e
 
-MAX_ITERATIONS=10
+MAX_ITERATIONS="${RALPH_MAX_ITERATIONS:-10}"
 
 if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
   MAX_ITERATIONS="$1"
+fi
+
+if [[ "$1" == "--help" ]]; then
+  echo "Usage: ./ralph.sh [max_iterations]"
+  echo "Runs the Ralph agent loop."
+  exit 0
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,6 +23,11 @@ PRD_FILE="$PLANS_DIR/prd.json"
 PROGRESS_FILE="$PLANS_DIR/progress.txt"
 ARCHIVE_DIR="$PLANS_DIR/archive"
 LAST_BRANCH_FILE="$PLANS_DIR/.last-branch"
+
+# Load configuration if exists
+if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
+  source "$SCRIPT_DIR/ralph.conf"
+fi
 
 if [ -f "$PRD_FILE" ] && [ -f "$LAST_BRANCH_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
@@ -52,7 +63,20 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "---" >> "$PROGRESS_FILE"
 fi
 
-echo "Starting Ralph - Max iterations: $MAX_ITERATIONS"
+# Tool selection
+TOOL="${RALPH_TOOL:-opencode}"
+
+# Validate tool
+case "$TOOL" in
+  opencode|claude|codex)
+    ;;
+  *)
+    echo "Error: Unknown tool '$TOOL'. Supported tools: opencode, claude, codex" >&2
+    exit 1
+    ;;
+esac
+
+echo "Starting Ralph using $TOOL - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
@@ -60,7 +84,19 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS"
   echo "==============================================================="
 
-  OUTPUT=$(opencode run "$(cat "$SCRIPT_DIR/AGENTS.md")" 2>&1 | tee /dev/stderr) || true
+  AGENT_PROMPT="$(cat "$SCRIPT_DIR/AGENTS.md")"
+
+  case "$TOOL" in
+    opencode)
+      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+    claude)
+      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+    codex)
+      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+  esac
   
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
