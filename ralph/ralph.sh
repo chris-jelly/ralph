@@ -52,7 +52,20 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "---" >> "$PROGRESS_FILE"
 fi
 
-echo "Starting Ralph - Max iterations: $MAX_ITERATIONS"
+# Tool selection
+TOOL="${RALPH_TOOL:-opencode}"
+
+# Validate tool
+case "$TOOL" in
+  opencode|claude|codex)
+    ;;
+  *)
+    echo "Error: Unknown tool '$TOOL'. Supported tools: opencode, claude, codex" >&2
+    exit 1
+    ;;
+esac
+
+echo "Starting Ralph using $TOOL - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
@@ -60,7 +73,19 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS"
   echo "==============================================================="
 
-  OUTPUT=$(opencode run "$(cat "$SCRIPT_DIR/AGENTS.md")" 2>&1 | tee /dev/stderr) || true
+  AGENT_PROMPT="$(cat "$SCRIPT_DIR/AGENTS.md")"
+
+  case "$TOOL" in
+    opencode)
+      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+    claude)
+      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+    codex)
+      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
+      ;;
+  esac
   
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
