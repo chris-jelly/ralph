@@ -3,6 +3,7 @@
 - When testing installation scripts (`install.sh`), use a temporary directory with `git init` to simulate a target repo.
 - Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
 - Use python one-liner `python3 -c "import os, sys; print(os.path.abspath(os.path.expandvars(os.path.expanduser(sys.argv[1]))))"` for robust path expansion in bash.
+- When handling paths that might be relative to a configuration directory, check if they are absolute (using `os.path.isabs` or regex) *before* fully expanding them.
 
 ## 2026-01-31 - US-004
 - Created `ralph/doctor.sh` validation script.
@@ -48,4 +49,25 @@
 - **Learnings for future iterations:**
   - Python's `os.path` module is more reliable than Bash string manipulation for complex path expansion.
   - `realpath -m` allows resolving absolute paths even if the target directory doesn't exist yet (crucial for installation targets).
+---
+
+## 2026-01-31 - US-002
+- Applied `expand_path` to `TARGET_DIR` in `ralph/install.sh`.
+- Verified that `~` notation, environment variables, and relative paths are correctly expanded.
+- Used a temporary git repository to verify `install.sh` execution with expanded paths.
+- Files changed: `ralph/install.sh`
+- **Learnings for future iterations:**
+  - The expansion must happen *after* argument parsing and interactive prompts but *before* validations.
+  - Using `git init` in temporary directories is essential for testing scripts that validate git repository presence.
+---
+
+## 2026-01-31 - US-003
+- Applied path expansion to `RALPH_DIR_NAME` in `ralph/install.sh`.
+- Added logic to distinguish between absolute paths (handled as is) and relative paths (appended to `TARGET_DIR`).
+- Verified with integration tests covering absolute, relative, `~`, and environment variable paths.
+- Files changed: `ralph/install.sh`
+- **Learnings for future iterations:**
+  - When expanding paths using `abspath`, relative paths are resolved against CWD. To support "relative to X" logic, check if the path is absolute *before* using `expand_path`.
+  - Python `os.path.expandvars` is useful to resolve variables without forcing the path to be absolute immediately.
+  - `TARGET_DIR` should be expanded first so it can be used as a base for other relative paths.
 ---

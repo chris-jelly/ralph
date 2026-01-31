@@ -137,6 +137,31 @@ if [ -d "$TARGET_DIR" ]; then
     TARGET_DIR=$(cd "$TARGET_DIR" && pwd)
 fi
 
+# Expand RALPH_DIR_NAME
+# Logic: If absolute (after expansion), use as is. If relative, append to TARGET_DIR.
+IS_ABS="no"
+if command -v python3 >/dev/null 2>&1; then
+    IS_ABS=$(python3 -c "import os, sys; path=os.path.expandvars(os.path.expanduser(sys.argv[1])); print('yes' if os.path.isabs(path) else 'no')" "$RALPH_DIR_NAME")
+else
+    # Fallback checks
+    TEMP_PATH="$RALPH_DIR_NAME"
+    if [[ "$TEMP_PATH" == "~/"* ]]; then
+        TEMP_PATH="${HOME}/${TEMP_PATH:2}"
+    elif [[ "$TEMP_PATH" == "~" ]]; then
+        TEMP_PATH="$HOME"
+    fi
+    
+    if [[ "$TEMP_PATH" == /* ]]; then
+        IS_ABS="yes"
+    fi
+fi
+
+if [ "$IS_ABS" == "yes" ]; then
+    RALPH_DIR_NAME=$(expand_path "$RALPH_DIR_NAME")
+else
+    RALPH_DIR_NAME=$(expand_path "$TARGET_DIR/$RALPH_DIR_NAME")
+fi
+
 echo "Installing Ralph..."
 echo "Target: $TARGET_DIR"
 echo "Ralph Dir: $RALPH_DIR_NAME"
@@ -150,7 +175,7 @@ if [ ! -d "$TARGET_DIR/.git" ]; then
 fi
 
 # Validation: Check if Ralph is already installed
-INSTALL_PATH="$TARGET_DIR/$RALPH_DIR_NAME"
+INSTALL_PATH="$RALPH_DIR_NAME"
 if [ -d "$INSTALL_PATH" ]; then
     echo "Error: Ralph appears to be already installed at '$INSTALL_PATH'."
     echo "Please remove it or choose a different directory."
