@@ -86,3 +86,67 @@ if [[ ! "$TOOL" =~ ^(opencode|claude|codex)$ ]]; then
 fi
 
 echo "Validation passed."
+
+# Define Source Directory (where this script is located)
+SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
+
+echo "Creating directories..."
+# Create Ralph installation directory
+mkdir -p "$INSTALL_PATH"
+
+# Create plans directory in target root
+mkdir -p "$TARGET_DIR/plans"
+# Create .gitkeep
+touch "$TARGET_DIR/plans/.gitkeep"
+
+echo "Copying files from $SOURCE_DIR..."
+
+# Helper function to copy file and validate
+copy_file() {
+    local SRC="$1"
+    local DEST="$2"
+    if [ -f "$SRC" ]; then
+        cp "$SRC" "$DEST"
+    else
+        echo "Error: Source file '$SRC' not found."
+        exit 1
+    fi
+}
+
+copy_file "$SOURCE_DIR/ralph.sh" "$INSTALL_PATH/"
+copy_file "$SOURCE_DIR/AGENTS.md" "$INSTALL_PATH/"
+copy_file "$SOURCE_DIR/prd.json.example" "$INSTALL_PATH/"
+
+# Make ralph.sh executable
+chmod +x "$INSTALL_PATH/ralph.sh"
+
+# Update .gitignore
+GITIGNORE="$TARGET_DIR/.gitignore"
+echo "Updating .gitignore..."
+
+# Helper function to append line if not exists
+append_if_missing() {
+    local FILE="$1"
+    local LINE="$2"
+    
+    # Create file if it doesn't exist
+    if [ ! -f "$FILE" ]; then
+        touch "$FILE"
+    fi
+    
+    # Check if line exists (exact match)
+    if ! grep -Fxq "$LINE" "$FILE"; then
+        # Ensure newline before appending if file is not empty and doesn't end with newline
+        if [ -s "$FILE" ] && [ "$(tail -c1 "$FILE" | wc -l)" -eq 0 ]; then
+            echo "" >> "$FILE"
+        fi
+        echo "$LINE" >> "$FILE"
+    fi
+}
+
+append_if_missing "$GITIGNORE" ""
+append_if_missing "$GITIGNORE" "# Ralph"
+append_if_missing "$GITIGNORE" ".claude/"
+append_if_missing "$GITIGNORE" "plans/archive/"
+
+echo "Success! Ralph installed to $INSTALL_PATH"
