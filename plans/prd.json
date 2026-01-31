@@ -81,8 +81,8 @@
         "Typecheck/lint passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added examples to install.sh help and root README.md"
     },
     {
       "id": "US-006",
@@ -100,8 +100,8 @@
         "Typecheck/lint passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Created tests/test_install_paths.sh that extracts and tests expand_path function"
     }
   ]
 }

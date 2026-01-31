@@ -1,3 +1,6 @@
+## Codebase Patterns
+- To unit test shell functions defined in a script without side effects, extract them using sed: `eval "$(sed -n '/^func() {/,/^}/p' script.sh)"`
+
 ## 2026-01-31 - US-004
 - Implemented robust path validation in `ralph/install.sh`.
 - Added validation to ensure `TARGET_DIR` exists after expansion.
@@ -7,4 +10,21 @@
 - **Learnings for future iterations:**
   - When validating paths where `mkdir -p` will be used later, check if the path is a child of a known existing directory (like `TARGET_DIR`) to avoid false positives.
   - Bash string manipulation (prefix check) is sufficient for simple "is child of" checks if paths are canonicalized.
+---
+## 2026-01-31 - US-005
+- Updated `ralph/install.sh` help message with path format examples.
+- Updated root `README.md` with path format examples in the Installation section.
+- Files changed: `ralph/install.sh`, `README.md`
+- **Learnings for future iterations:**
+  - The `ralph/README.md` file seems to be a template or unused doc, while the root `README.md` contains the actual installation instructions.
+  - `ralph/install.sh` generates its own README for the installed instance, rather than copying `ralph/README.md`.
+---
+## 2026-01-31 - US-006
+- Created `tests/test_install_paths.sh` to validate `expand_path` functionality.
+- Used `sed` to extract the `expand_path` function from `ralph/install.sh` for isolated testing.
+- Verified all path expansion scenarios: ~, $HOME, relative paths, absolute paths, mixed formats.
+- Files changed: `tests/test_install_paths.sh`
+- **Learnings for future iterations:**
+  - Testing internal shell functions is possible by extracting them with `sed` and `eval`, allowing unit testing without running the full script side effects.
+  - `os.path.abspath` in Python (used for expansion) strips trailing slashes, so expectations should match that behavior.
 ---
