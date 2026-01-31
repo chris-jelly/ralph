@@ -129,6 +129,9 @@ RALPH_DIR_NAME="${RALPH_DIR_NAME:-scripts/ralph}"
 TOOL="${TOOL:-opencode}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
+# Expand TARGET_DIR to handle ~, env vars, and relative paths
+TARGET_DIR=$(expand_path "$TARGET_DIR")
+
 # Resolve absolute path for target directory (if it exists)
 if [ -d "$TARGET_DIR" ]; then
     TARGET_DIR=$(cd "$TARGET_DIR" && pwd)
