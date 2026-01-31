@@ -75,7 +75,7 @@
         "doctor.sh provides helpful error messages for failures"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {

@@ -10,6 +10,12 @@ if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
   MAX_ITERATIONS="$1"
 fi
 
+if [[ "$1" == "--help" ]]; then
+  echo "Usage: ./ralph.sh [max_iterations]"
+  echo "Runs the Ralph agent loop."
+  exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/../..")"
 PLANS_DIR="$REPO_ROOT/plans"

@@ -114,11 +114,13 @@ copy_file() {
 }
 
 copy_file "$SOURCE_DIR/ralph.sh" "$INSTALL_PATH/"
+copy_file "$SOURCE_DIR/doctor.sh" "$INSTALL_PATH/"
 copy_file "$SOURCE_DIR/AGENTS.md" "$INSTALL_PATH/"
 copy_file "$SOURCE_DIR/prd.json.example" "$INSTALL_PATH/"
 
-# Make ralph.sh executable
+# Make scripts executable
 chmod +x "$INSTALL_PATH/ralph.sh"
+chmod +x "$INSTALL_PATH/doctor.sh"
 
 # Update .gitignore
 GITIGNORE="$TARGET_DIR/.gitignore"

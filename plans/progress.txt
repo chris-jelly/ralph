@@ -1,37 +1,10 @@
-# Ralph Progress Log
-## Codebase Patterns
-- Bash: Always use `set -euo pipefail` for safety
-- Testing: Shellcheck is not available in the current environment
-- Bash: Use `$(cd "$(dirname "$0")" && pwd)` to reliably get script directory
-- Bash: Use `grep -Fxq` for exact line matching checks
-- Bash: Be aware that `tee /dev/stderr` might fail in restricted environments
-
-## 2026-01-31 - US-001
-- Implemented `ralph/install.sh` with argument parsing and validation.
-- Validates target directory is a git repo.
-- Checks if Ralph is already installed.
-- Validates tool selection.
-- Files changed: `ralph/install.sh`
+## 2026-01-31 - US-004
+- Created `ralph/doctor.sh` validation script.
+- Updated `ralph/install.sh` to install `doctor.sh`.
+- Updated `ralph/ralph.sh` to support `--help` for verification.
+- Files changed: `ralph/doctor.sh`, `ralph/install.sh`, `ralph/ralph.sh`
 - **Learnings for future iterations:**
-  - `shellcheck` is not installed in the environment, so manual verification of bash scripts is required.
-  - Used `cat << EOF` for help message which is clean.
-  - Used `dirname/basename` logic for paths.
-## 2026-01-31 - US-002
-- Implemented file copying and directory setup in `ralph/install.sh`.
-- Created `scripts/ralph` (or custom dir) and `plans/` directories.
-- Copied `ralph.sh`, `AGENTS.md`, `prd.json.example`.
-- Updated target `.gitignore` with Ralph entries.
-- Files changed: `ralph/install.sh`
-- **Learnings for future iterations:**
-  - `dirname "$0"` is relative to execution; use `cd ... && pwd` for absolute source path.
-  - Updating `.gitignore` requires careful checking to avoid duplicates (used `grep -Fxq`).
-## 2026-01-31 - US-003
-- Implemented tool selection support in `ralph/ralph.sh`.
-- Supports `opencode`, `claude`, and `codex` via `RALPH_TOOL` environment variable.
-- Defaults to `opencode`.
-- Validates tool selection at startup.
-- Files changed: `ralph/ralph.sh`
-- **Learnings for future iterations:**
-  - Mocking AI tools that simply echo arguments can trigger "Success" detection if the prompt contains the success string (e.g. `<promise>COMPLETE</promise>` in instructions).
-  - `tee /dev/stderr` can fail in some CI/container environments if the device is not present.
+  - `doctor.sh` must be able to locate the installation relative to itself or the repo root.
+  - `install.sh` must be updated whenever a new script is added to the distribution.
+  - Scripts should support `--help` to allow basic runtime verification without side effects.
 ---
