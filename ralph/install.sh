@@ -7,6 +7,34 @@ RALPH_DIR_NAME=""
 TOOL=""
 MAX_ITERATIONS=""
 
+# Utility: Expand paths (~, vars, relative)
+expand_path() {
+    local path="$1"
+    # Use python3 for robust expansion if available
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c "import os, sys; print(os.path.abspath(os.path.expandvars(os.path.expanduser(sys.argv[1]))))" "$path"
+    else
+        # Fallback: Basic tilde expansion
+        if [[ "$path" == "~/"* ]]; then
+            path="${HOME}/${path:2}"
+        elif [[ "$path" == "~" ]]; then
+            path="$HOME"
+        fi
+        
+        # Fallback: realpath for absolute path
+        if command -v realpath >/dev/null 2>&1; then
+            realpath -m "$path"
+        else
+            # Last resort: simplistic absolute path
+            if [[ "$path" != /* ]]; then
+                echo "$(pwd)/$path"
+            else
+                echo "$path"
+            fi
+        fi
+    fi
+}
+
 # Help message
 show_help() {
     cat << EOF
@@ -26,8 +54,25 @@ Options:
   --tool TOOL           AI tool to use: opencode, claude, codex (default: opencode)
   --max-iterations N    Maximum iterations for the agent loop (default: 10)
   --help                Show this help message
+
+Examples:
+  # Install to absolute path
+  $(basename "$0") --target /home/user/projects/my-repo
+
+  # Use tilde expansion (supported for --target and --ralph-dir)
+  $(basename "$0") --target ~/git/my-repo
+
+  # Use environment variables
+  $(basename "$0") --target \$HOME/projects/app
+
+  # Use relative path (converted to absolute)
+  $(basename "$0") --target ../other-repo
+
+  # Custom Ralph scripts location
+  $(basename "$0") --target . --ralph-dir ~/custom-ralph
 EOF
 }
+
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -101,9 +146,59 @@ RALPH_DIR_NAME="${RALPH_DIR_NAME:-scripts/ralph}"
 TOOL="${TOOL:-opencode}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
+# Expand TARGET_DIR to handle ~, env vars, and relative paths
+ORIGINAL_TARGET_DIR="$TARGET_DIR"
+TARGET_DIR=$(expand_path "$TARGET_DIR")
+
+# Validation: Check if expanded TARGET_DIR exists
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Target directory '$TARGET_DIR' does not exist after expansion. Please check the path."
+    echo "Original input: $ORIGINAL_TARGET_DIR"
+    exit 1
+fi
+
 # Resolve absolute path for target directory (if it exists)
 if [ -d "$TARGET_DIR" ]; then
     TARGET_DIR=$(cd "$TARGET_DIR" && pwd)
+fi
+
+# Expand RALPH_DIR_NAME
+# Logic: If absolute (after expansion), use as is. If relative, append to TARGET_DIR.
+IS_ABS="no"
+if command -v python3 >/dev/null 2>&1; then
+    IS_ABS=$(python3 -c "import os, sys; path=os.path.expandvars(os.path.expanduser(sys.argv[1])); print('yes' if os.path.isabs(path) else 'no')" "$RALPH_DIR_NAME")
+else
+    # Fallback checks
+    TEMP_PATH="$RALPH_DIR_NAME"
+    if [[ "$TEMP_PATH" == "~/"* ]]; then
+        TEMP_PATH="${HOME}/${TEMP_PATH:2}"
+    elif [[ "$TEMP_PATH" == "~" ]]; then
+        TEMP_PATH="$HOME"
+    fi
+    
+    if [[ "$TEMP_PATH" == /* ]]; then
+        IS_ABS="yes"
+    fi
+fi
+
+if [ "$IS_ABS" == "yes" ]; then
+    RALPH_DIR_NAME=$(expand_path "$RALPH_DIR_NAME")
+else
+    RALPH_DIR_NAME=$(expand_path "$TARGET_DIR/$RALPH_DIR_NAME")
+fi
+
+# Validation: Check if parent directory of RALPH_DIR_NAME exists (or is inside TARGET_DIR)
+RALPH_PARENT_DIR=$(dirname "$RALPH_DIR_NAME")
+if [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR" ]] || [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR"/* ]]; then
+    # Parent is inside target directory (or is target directory), so we can create it
+    :
+else
+    # Parent is outside target directory, so it must exist
+    if [ ! -d "$RALPH_PARENT_DIR" ]; then
+        echo "Error: Parent directory of '$RALPH_DIR_NAME' does not exist."
+        echo "Directory '$RALPH_PARENT_DIR' must exist for installation outside the target directory."
+        exit 1
+    fi
 fi
 
 echo "Installing Ralph..."
@@ -119,7 +214,7 @@ if [ ! -d "$TARGET_DIR/.git" ]; then
 fi
 
 # Validation: Check if Ralph is already installed
-INSTALL_PATH="$TARGET_DIR/$RALPH_DIR_NAME"
+INSTALL_PATH="$RALPH_DIR_NAME"
 if [ -d "$INSTALL_PATH" ]; then
     echo "Error: Ralph appears to be already installed at '$INSTALL_PATH'."
     echo "Please remove it or choose a different directory."

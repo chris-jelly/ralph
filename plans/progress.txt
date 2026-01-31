@@ -1,39 +1,30 @@
 ## Codebase Patterns
-- Installation scripts should persist user choices (e.g. tool selection) to a config file (e.g. `ralph.conf`) for other scripts to use.
-- When testing installation scripts (`install.sh`), use a temporary directory with `git init` to simulate a target repo.
-- Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
+- To unit test shell functions defined in a script without side effects, extract them using sed: `eval "$(sed -n '/^func() {/,/^}/p' script.sh)"`
 
 ## 2026-01-31 - US-004
-- Created `ralph/doctor.sh` validation script.
-- Updated `ralph/install.sh` to install `doctor.sh`.
-- Updated `ralph/ralph.sh` to support `--help` for verification.
-- Files changed: `ralph/doctor.sh`, `ralph/install.sh`, `ralph/ralph.sh`
+- Implemented robust path validation in `ralph/install.sh`.
+- Added validation to ensure `TARGET_DIR` exists after expansion.
+- Added validation to ensure `RALPH_DIR_NAME` parent directory exists (if outside the target directory).
+- Created `tests/test_validation.sh` to verify error conditions.
+- Files changed: `ralph/install.sh`, `tests/test_validation.sh`
 - **Learnings for future iterations:**
-  - `doctor.sh` must be able to locate the installation relative to itself or the repo root.
-  - `install.sh` must be updated whenever a new script is added to the distribution.
-  - Scripts should support `--help` to allow basic runtime verification without side effects.
+  - When validating paths where `mkdir -p` will be used later, check if the path is a child of a known existing directory (like `TARGET_DIR`) to avoid false positives.
+  - Bash string manipulation (prefix check) is sufficient for simple "is child of" checks if paths are canonicalized.
 ---
-
 ## 2026-01-31 - US-005
-- Implemented interactive mode in `ralph/install.sh` to prompt for missing arguments.
-- Added automatic `README.md` generation in the target `scripts/ralph` directory.
-- Added success message with clear next steps.
-- Files changed: `ralph/install.sh`
+- Updated `ralph/install.sh` help message with path format examples.
+- Updated root `README.md` with path format examples in the Installation section.
+- Files changed: `ralph/install.sh`, `README.md`
 - **Learnings for future iterations:**
-  - `install.sh` can be tested by creating a temporary directory and running it with explicit flags.
-  - Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
-  - `README.md` generation using `cat << EOF` allows for variable substitution, making documentation dynamic.
+  - The `ralph/README.md` file seems to be a template or unused doc, while the root `README.md` contains the actual installation instructions.
+  - `ralph/install.sh` generates its own README for the installed instance, rather than copying `ralph/README.md`.
 ---
-
 ## 2026-01-31 - US-006
-- Validated installation with opencode, claude, and codex tools using temporary repositories.
-- Updated `ralph/install.sh` to create a `ralph.conf` file to persist tool selection.
-- Updated `ralph/ralph.sh` and `ralph/doctor.sh` to read from `ralph.conf`.
-- Updated `README.md` with automated installation instructions.
-- Updated `AGENTS.md` with list of installation files.
-- Files changed: `ralph/install.sh`, `ralph/doctor.sh`, `ralph/ralph.sh`, `README.md`, `AGENTS.md`
+- Created `tests/test_install_paths.sh` to validate `expand_path` functionality.
+- Used `sed` to extract the `expand_path` function from `ralph/install.sh` for isolated testing.
+- Verified all path expansion scenarios: ~, $HOME, relative paths, absolute paths, mixed formats.
+- Files changed: `tests/test_install_paths.sh`
 - **Learnings for future iterations:**
-  - Installation scripts should persist configuration (like chosen tool) to a config file so other scripts (doctor, runner) can use it without environment variables.
-  - `command -v` is useful for checking if a tool exists in the PATH.
-  - When testing installation scripts, it is crucial to verify that the installed environment behaves as expected (e.g., uses the correct tool).
+  - Testing internal shell functions is possible by extracting them with `sed` and `eval`, allowing unit testing without running the full script side effects.
+  - `os.path.abspath` in Python (used for expansion) strips trailing slashes, so expectations should match that behavior.
 ---

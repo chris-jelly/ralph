@@ -31,6 +31,21 @@ cd ralph
 ./ralph/install.sh --target /path/to/your/project
 ```
 
+**Supported Path Formats:**
+
+The installer supports various path formats including `~` expansion, environment variables, and relative paths:
+
+```bash
+# Use tilde expansion
+./ralph/install.sh --target ~/git/my-repo
+
+# Use environment variables
+./ralph/install.sh --target $HOME/projects/app
+
+# Use relative paths (automatically converted to absolute)
+./ralph/install.sh --target ../other-repo
+```
+
 Or run interactively to be guided through the setup:
 
 ```bash
