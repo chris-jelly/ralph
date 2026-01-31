@@ -130,7 +130,15 @@ TOOL="${TOOL:-opencode}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
 # Expand TARGET_DIR to handle ~, env vars, and relative paths
+ORIGINAL_TARGET_DIR="$TARGET_DIR"
 TARGET_DIR=$(expand_path "$TARGET_DIR")
+
+# Validation: Check if expanded TARGET_DIR exists
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Target directory '$TARGET_DIR' does not exist after expansion. Please check the path."
+    echo "Original input: $ORIGINAL_TARGET_DIR"
+    exit 1
+fi
 
 # Resolve absolute path for target directory (if it exists)
 if [ -d "$TARGET_DIR" ]; then
@@ -160,6 +168,20 @@ if [ "$IS_ABS" == "yes" ]; then
     RALPH_DIR_NAME=$(expand_path "$RALPH_DIR_NAME")
 else
     RALPH_DIR_NAME=$(expand_path "$TARGET_DIR/$RALPH_DIR_NAME")
+fi
+
+# Validation: Check if parent directory of RALPH_DIR_NAME exists (or is inside TARGET_DIR)
+RALPH_PARENT_DIR=$(dirname "$RALPH_DIR_NAME")
+if [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR" ]] || [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR"/* ]]; then
+    # Parent is inside target directory (or is target directory), so we can create it
+    :
+else
+    # Parent is outside target directory, so it must exist
+    if [ ! -d "$RALPH_PARENT_DIR" ]; then
+        echo "Error: Parent directory of '$RALPH_DIR_NAME' does not exist."
+        echo "Directory '$RALPH_PARENT_DIR' must exist for installation outside the target directory."
+        exit 1
+    fi
 fi
 
 echo "Installing Ralph..."
