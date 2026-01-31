@@ -1,118 +1,106 @@
 {
-  "project": "Ralph Install CLI",
-  "branchName": "ralph/installation-system",
-  "description": "Create an installation system for Ralph that allows easy setup in any repository with support for multiple AI tools",
+  "project": "ralph",
+  "branchName": "ralph/install-path-expansion",
+  "description": "Enhance Ralph install script to support home directory notation (~), environment variables, and relative paths with proper validation and error handling",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Create install.sh script with configuration options",
-      "description": "As a developer, I want an install.sh script that accepts configuration flags so I can customize Ralph installation",
+      "title": "Add path expansion utility function",
+      "description": "As a developer, I need a robust path expansion function that handles ~, environment variables, and relative paths so that all path formats work consistently",
       "acceptanceCriteria": [
-        "install.sh accepts --target (directory to install into, default: current directory)",
-        "install.sh accepts --ralph-dir (where to create scripts/ralph, default: scripts/ralph)",
-        "install.sh accepts --tool (opencode|claude|codex, default: opencode)",
-        "install.sh accepts --max-iterations (default: 10)",
-        "install.sh accepts --help flag displaying usage instructions",
-        "install.sh validates that target directory is a git repository",
-        "install.sh checks if Ralph is already installed to prevent duplicate installs",
-        "install.sh has executable permissions",
-        "Typecheck passes for bash script (shellcheck)"
+        "Create expand_path() function in install.sh that expands ~ to $HOME",
+        "Function expands common environment variables ($HOME, $USER, $PWD, etc.)",
+        "Function converts relative paths to absolute paths using realpath or similar",
+        "Function returns the fully resolved absolute path",
+        "Typecheck/lint passes (shellcheck if available)"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Shellcheck validation skipped as tool not available in environment"
+      "notes": ""
     },
     {
       "id": "US-002",
-      "title": "Implement file copying and directory setup",
-      "description": "As a developer, I want files copied to target directory with proper structure so Ralph works immediately",
+      "title": "Apply path expansion to TARGET_DIR parameter",
+      "description": "As a user, I want to use ~ notation and environment variables in --target path so that I can easily specify paths like ~/git/my-repo",
       "acceptanceCriteria": [
-        "install.sh creates target directory if it doesn't exist",
-        "install.sh creates ralph installation directory (scripts/ralph or custom)",
-        "install.sh creates plans/ directory with .gitkeep file",
-        "install.sh copies ralph.sh to target location",
-        "install.sh copies AGENTS.md to target location",
-        "install.sh copies prd.json.example to target location",
-        "install.sh makes ralph.sh executable (chmod +x)",
-        "install.sh appends Ralph-specific entries to target repo's .gitignore",
-        "install.sh validates all files were copied successfully"
+        "TARGET_DIR input is processed through expand_path() after argument parsing",
+        "Paths like ~/git/repo correctly expand to /home/username/git/repo",
+        "Environment variables like $HOME/git/repo work correctly",
+        "Relative paths like ../other-repo are converted to absolute paths",
+        "Interactive mode prompts also support expanded paths",
+        "Typecheck/lint passes"
       ],
       "priority": 2,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-003",
-      "Add tool selection support to ralph.sh",
-      "description": "As a developer, I want ralph.sh to support multiple AI tools (opencode, claude, codex) so I can use my preferred tool",
+      "title": "Apply path expansion to RALPH_DIR_NAME parameter",
+      "description": "As a user, I want to use ~ notation and environment variables in --ralph-dir path so that I can specify custom installation locations flexibly",
       "acceptanceCriteria": [
-        "ralph.sh reads RALPH_TOOL environment variable (default: opencode)",
-        "ralph.sh supports opencode with command: opencode run "$(cat AGENTS.md)"",
-        "ralph.sh supports claude with command: claude code --message "$(cat AGENTS.md)"",
-        "ralph.sh supports codex with command: codex exec "$(cat AGENTS.md)"",
-        "ralph.sh exits with error if unknown tool is specified",
-        "ralph.sh displays clear error message for unsupported tools",
-        "ralph.sh works with all three tools outputting to stdout and stderr",
-        "ralph.sh maintains existing iteration loop and SUCCESS detection logic"
+        "RALPH_DIR_NAME input is processed through expand_path() after argument parsing",
+        "Supports ~ notation, environment variables, and relative paths",
+        "Handles both standalone paths and paths relative to TARGET_DIR correctly",
+        "Interactive mode prompts also support expanded paths",
+        "Typecheck/lint passes"
       ],
       "priority": 3,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-004",
-      "title": "Create doctor.sh validation script",
-      "description": "As a developer, I want a doctor.sh script that validates Ralph installation so I can verify everything works",
+      "title": "Add path validation with clear error messages",
+      "description": "As a user, I want clear error messages when I provide invalid paths so that I can quickly fix any issues without confusion",
       "acceptanceCriteria": [
-        "doctor.sh checks that ralph.sh exists and is executable",
-        "doctor.sh checks that AGENTS.md exists in the ralph directory",
-        "doctor.sh checks that plans/ directory exists",
-        "doctor.sh checks that .gitignore contains Ralph entries",
-        "doctor.sh validates required CLI tool is installed (based on RALPH_TOOL)",
-        "doctor.sh tests ralph.sh runs successfully with --help or dry run",
-        "doctor.sh outputs clear PASS/FAIL status for each check",
-        "doctor.sh exits with non-zero code if any checks fail",
-        "doctor.sh provides helpful error messages for failures"
+        "Validate that expanded TARGET_DIR exists before proceeding",
+        "If TARGET_DIR doesn't exist, show error: 'Error: Target directory '[path]' does not exist after expansion. Please check the path.'",
+        "Show both original input and expanded path in error messages for clarity",
+        "Validate that parent directory of RALPH_DIR_NAME exists (or can be created)",
+        "If parent directory doesn't exist, show helpful error message",
+        "All validation failures exit with non-zero status code",
+        "Typecheck/lint passes"
       ],
       "priority": 4,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-005",
-      "title": "Add interactive prompts and installation README",
-      "description": "As a developer, I want interactive mode and local documentation so installation is user-friendly",
+      "title": "Update documentation with path format examples",
+      "description": "As a user, I want clear documentation showing all supported path formats so that I know how to use the install script effectively",
       "acceptanceCriteria": [
-        "install.sh prompts for installation directory if --ralph-dir not provided",
-        "install.sh prompts for AI tool selection (opencode/claude/codex) if --tool not provided",
-        "install.sh prompts for max iterations if not provided",
-        "install.sh generates README.md in target ralph directory with usage instructions",
-        "Generated README includes: configured tool information, quick start guide, example usage",
-        "install.sh displays success message with next steps after completion",
-        "install.sh shows progress updates during installation process",
-        "README.md includes link to main Ralph documentation"
+        "Update ralph/install.sh help message (show_help function) with path format examples",
+        "Add examples section showing: absolute paths, ~ notation, environment variables, relative paths",
+        "Include example: --target ~/git/my-repo",
+        "Include example: --target $HOME/projects/app",
+        "Include example: --target ../other-repo",
+        "Update ralph/README.md installation section with path format examples",
+        "Add note that relative paths are converted to absolute for clarity",
+        "Typecheck/lint passes"
       ],
       "priority": 5,
-      "passes": true,
+      "passes": false,
       "notes": ""
     },
     {
       "id": "US-006",
-      "title": "Add documentation and test installation with all tools",
-      "description": "As a developer, I want comprehensive documentation and validated examples so the installation system is easy to use",
+      "title": "Add test cases for path expansion",
+      "description": "As a developer, I want automated tests for path expansion functionality so that future changes don't break this feature",
       "acceptanceCriteria": [
-        "install.sh --help displays detailed usage instructions",
-        "install.sh includes inline comments explaining key steps",
-        "install.sh creates valid bash script that passes shellcheck",
-        "Test installation with --tool opencode succeeds",
-        "Test installation with --tool claude succeeds",
-        "Test installation with --tool codex succeeds",
-        "doctor.sh validates installation for all three tools",
-        "Update main Ralph README.md to include installation instructions",
-        "Update AGENTS.md with installation system documentation"
+        "Create test script (tests/test_install_paths.sh or similar) that validates path expansion",
+        "Test case: ~ expands to home directory",
+        "Test case: $HOME variable expands correctly",
+        "Test case: Relative path ../test converts to absolute",
+        "Test case: Already absolute path remains unchanged",
+        "Test case: Invalid path produces expected error message",
+        "Test case: Mixed format like ~/projects/$USER works correctly",
+        "All tests pass when run",
+        "Typecheck/lint passes"
       ],
       "priority": 6,
-      "passes": true,
+      "passes": false,
       "notes": ""
     }
   ]

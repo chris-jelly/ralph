@@ -7,6 +7,34 @@ RALPH_DIR_NAME=""
 TOOL=""
 MAX_ITERATIONS=""
 
+# Utility: Expand paths (~, vars, relative)
+expand_path() {
+    local path="$1"
+    # Use python3 for robust expansion if available
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c "import os, sys; print(os.path.abspath(os.path.expandvars(os.path.expanduser(sys.argv[1]))))" "$path"
+    else
+        # Fallback: Basic tilde expansion
+        if [[ "$path" == "~/"* ]]; then
+            path="${HOME}/${path:2}"
+        elif [[ "$path" == "~" ]]; then
+            path="$HOME"
+        fi
+        
+        # Fallback: realpath for absolute path
+        if command -v realpath >/dev/null 2>&1; then
+            realpath -m "$path"
+        else
+            # Last resort: simplistic absolute path
+            if [[ "$path" != /* ]]; then
+                echo "$(pwd)/$path"
+            else
+                echo "$path"
+            fi
+        fi
+    fi
+}
+
 # Help message
 show_help() {
     cat << EOF

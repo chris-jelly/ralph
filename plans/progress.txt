@@ -2,6 +2,7 @@
 - Installation scripts should persist user choices (e.g. tool selection) to a config file (e.g. `ralph.conf`) for other scripts to use.
 - When testing installation scripts (`install.sh`), use a temporary directory with `git init` to simulate a target repo.
 - Interactive prompts (`read -p`) should be wrapped in `if [ -t 0 ]` to ensure they only run in a terminal.
+- Use python one-liner `python3 -c "import os, sys; print(os.path.abspath(os.path.expandvars(os.path.expanduser(sys.argv[1]))))"` for robust path expansion in bash.
 
 ## 2026-01-31 - US-004
 - Created `ralph/doctor.sh` validation script.
@@ -36,4 +37,15 @@
   - Installation scripts should persist configuration (like chosen tool) to a config file so other scripts (doctor, runner) can use it without environment variables.
   - `command -v` is useful for checking if a tool exists in the PATH.
   - When testing installation scripts, it is crucial to verify that the installed environment behaves as expected (e.g., uses the correct tool).
+---
+
+## 2026-01-31 - US-001
+- Implemented `expand_path` function in `ralph/install.sh`.
+- Uses Python 3 for robust expansion of `~`, environment variables, and relative paths.
+- Includes Bash fallback for basic `~` and `realpath` if Python is missing.
+- Verified with temporary test scripts covering `~`, `$VAR`, and relative paths.
+- Files changed: `ralph/install.sh`
+- **Learnings for future iterations:**
+  - Python's `os.path` module is more reliable than Bash string manipulation for complex path expansion.
+  - `realpath -m` allows resolving absolute paths even if the target directory doesn't exist yet (crucial for installation targets).
 ---
