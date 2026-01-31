@@ -54,8 +54,25 @@ Options:
   --tool TOOL           AI tool to use: opencode, claude, codex (default: opencode)
   --max-iterations N    Maximum iterations for the agent loop (default: 10)
   --help                Show this help message
+
+Examples:
+  # Install to absolute path
+  $(basename "$0") --target /home/user/projects/my-repo
+
+  # Use tilde expansion (supported for --target and --ralph-dir)
+  $(basename "$0") --target ~/git/my-repo
+
+  # Use environment variables
+  $(basename "$0") --target \$HOME/projects/app
+
+  # Use relative path (converted to absolute)
+  $(basename "$0") --target ../other-repo
+
+  # Custom Ralph scripts location
+  $(basename "$0") --target . --ralph-dir ~/custom-ralph
 EOF
 }
+
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
