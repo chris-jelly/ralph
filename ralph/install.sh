@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Default values
-TARGET_DIR="."
-RALPH_DIR_NAME="scripts/ralph"
-TOOL="opencode"
-MAX_ITERATIONS="10"
+# Initialize variables
+TARGET_DIR=""
+RALPH_DIR_NAME=""
+TOOL=""
+MAX_ITERATIONS=""
 
 # Help message
 show_help() {
@@ -53,6 +53,47 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Interactive Mode: Prompt for missing values if running in a terminal
+if [ -t 0 ]; then
+    echo "Ralph Installation Setup"
+    echo "========================"
+    
+    if [ -z "$TARGET_DIR" ]; then
+        read -p "Target directory to install into [.]: " input
+        TARGET_DIR="${input:-.}"
+    fi
+    
+    if [ -z "$RALPH_DIR_NAME" ]; then
+        read -p "Directory to create ralph scripts in [scripts/ralph]: " input
+        RALPH_DIR_NAME="${input:-scripts/ralph}"
+    fi
+    
+    if [ -z "$TOOL" ]; then
+        echo ""
+        echo "Select AI tool:"
+        echo "1) opencode (default)"
+        echo "2) claude"
+        echo "3) codex"
+        read -p "Enter choice [1]: " input
+        case "$input" in
+            2|claude) TOOL="claude" ;;
+            3|codex) TOOL="codex" ;;
+            *) TOOL="opencode" ;;
+        esac
+    fi
+    
+    if [ -z "$MAX_ITERATIONS" ]; then
+        read -p "Max iterations [10]: " input
+        MAX_ITERATIONS="${input:-10}"
+    fi
+fi
+
+# Apply defaults for any remaining empty variables (non-interactive mode)
+TARGET_DIR="${TARGET_DIR:-.}"
+RALPH_DIR_NAME="${RALPH_DIR_NAME:-scripts/ralph}"
+TOOL="${TOOL:-opencode}"
+MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
 # Resolve absolute path for target directory (if it exists)
 if [ -d "$TARGET_DIR" ]; then
@@ -151,4 +192,49 @@ append_if_missing "$GITIGNORE" "# Ralph"
 append_if_missing "$GITIGNORE" ".claude/"
 append_if_missing "$GITIGNORE" "plans/archive/"
 
+# Generate README.md
+echo "Generating README.md..."
+cat << EOF > "$INSTALL_PATH/README.md"
+# Ralph - Autonomous Coding Agent
+
+Ralph is an autonomous AI agent loop that works through your PRD items one by one.
+
+## Configuration
+
+- **Tool**: $TOOL
+- **Max Iterations**: $MAX_ITERATIONS
+- **Plans Directory**: ../plans/
+
+## Quick Start
+
+1. **Define your project**: Edit \`plans/prd.json\` (copied from example).
+2. **Run Ralph**:
+   \`\`\`bash
+   ./$RALPH_DIR_NAME/ralph.sh
+   \`\`\`
+   
+## Usage
+
+Ralph will:
+1. Read the PRD.
+2. Pick the highest priority incomplete story.
+3. Use **$TOOL** to implement it.
+4. Run tests and checks.
+5. Commit changes.
+6. Repeat until done or max iterations ($MAX_ITERATIONS) reached.
+
+## Commands
+
+- Run Ralph: \`./ralph.sh\`
+- Run Validation: \`./doctor.sh\`
+
+For full documentation, see [Ralph Documentation](https://github.com/example/ralph)
+EOF
+
+echo ""
 echo "Success! Ralph installed to $INSTALL_PATH"
+echo ""
+echo "Next Steps:"
+echo "1. Edit 'plans/prd.json' to define your project requirements."
+echo "2. Run './$RALPH_DIR_NAME/ralph.sh' to start the agent."
+echo ""
