@@ -14,6 +14,12 @@ Usage: $(basename "$0") [OPTIONS]
 
 Installs Ralph into a target repository.
 
+This script will:
+1. Create the 'plans' directory structure.
+2. Install Ralph scripts (ralph.sh, doctor.sh).
+3. Set up the selected AI tool configuration.
+4. Update .gitignore with Ralph-specific patterns.
+
 Options:
   --target DIR          Directory to install into (default: current directory)
   --ralph-dir DIR       Where to create scripts/ralph (default: scripts/ralph)
@@ -162,6 +168,14 @@ copy_file "$SOURCE_DIR/prd.json.example" "$INSTALL_PATH/"
 # Make scripts executable
 chmod +x "$INSTALL_PATH/ralph.sh"
 chmod +x "$INSTALL_PATH/doctor.sh"
+
+# Create configuration file
+echo "Creating ralph.conf..."
+cat << EOF > "$INSTALL_PATH/ralph.conf"
+# Ralph Configuration
+export RALPH_TOOL="$TOOL"
+export RALPH_MAX_ITERATIONS="$MAX_ITERATIONS"
+EOF
 
 # Update .gitignore
 GITIGNORE="$TARGET_DIR/.gitignore"

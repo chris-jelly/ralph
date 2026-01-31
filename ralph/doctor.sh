@@ -72,6 +72,11 @@ else
     report_fail ".gitignore not found at repo root" "Create .gitignore and add Ralph entries"
 fi
 
+# Load configuration if exists
+if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
+    source "$SCRIPT_DIR/ralph.conf"
+fi
+
 # 5. CLI Tool
 TOOL="${RALPH_TOOL:-opencode}"
 if command -v "$TOOL" >/dev/null 2>&1; then

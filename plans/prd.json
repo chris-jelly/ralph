@@ -93,7 +93,7 @@
         "README.md includes link to main Ralph documentation"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -112,7 +112,7 @@
         "Update AGENTS.md with installation system documentation"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": ""
     }
   ]

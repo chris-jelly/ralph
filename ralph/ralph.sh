@@ -4,7 +4,7 @@
 
 set -e
 
-MAX_ITERATIONS=10
+MAX_ITERATIONS="${RALPH_MAX_ITERATIONS:-10}"
 
 if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
   MAX_ITERATIONS="$1"
@@ -23,6 +23,11 @@ PRD_FILE="$PLANS_DIR/prd.json"
 PROGRESS_FILE="$PLANS_DIR/progress.txt"
 ARCHIVE_DIR="$PLANS_DIR/archive"
 LAST_BRANCH_FILE="$PLANS_DIR/.last-branch"
+
+# Load configuration if exists
+if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
+  source "$SCRIPT_DIR/ralph.conf"
+fi
 
 if [ -f "$PRD_FILE" ] && [ -f "$LAST_BRANCH_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")

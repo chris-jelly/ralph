@@ -29,6 +29,8 @@ cd flowchart && npm run build
 
 ### Distribution Files (ralph/)
 - `ralph.sh` - The bash loop that spawns fresh AI instances
+- `doctor.sh` - Validation script to check installation health
+- `install.sh` - Installation script for setting up Ralph in other repos
 - `AGENTS.md` - Instructions given to each AI agent instance (copy of root CLAUDE.md)
 - `prd.json.example` - Example PRD format for users
 - `README.md` - User-facing documentation
