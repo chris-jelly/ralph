@@ -8,12 +8,13 @@ You are an autonomous coding agent working on a software project.
 2. Read the progress log at `plans/progress.txt` (check Codebase Patterns section first)
 3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
 4. Pick the **highest priority** user story where `passes: false`
-5. Implement that single user story
-6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
-7. Update CLAUDE.md files if you discover reusable patterns (see below)
-8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
-9. Update the PRD to set `passes: true` for the completed story
-10. Append your progress to `plans/progress.txt`
+5. Check if `specifications/AGENTS.md` exists. If it does, read it to learn which specifications are relevant to your current story. Read ONLY the specifications listed for this story's context - do not read all specification files.
+6. Implement that single user story
+7. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
+8. Update CLAUDE.md files if you discover reusable patterns (see below)
+9. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
+10. Update the PRD to set `passes: true` for the completed story
+11. Append your progress to `plans/progress.txt`
 
 ## Progress Report Format
 
@@ -102,3 +103,4 @@ If there are still stories with `passes: false`, end your response normally (ano
 - Commit frequently
 - Keep CI green
 - Read the Codebase Patterns section in plans/progress.txt before starting
+- Do NOT edit anything in the specifications/ directory
