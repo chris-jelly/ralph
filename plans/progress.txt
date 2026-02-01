@@ -39,3 +39,13 @@
   - ralph/AGENTS.md is the main instruction file given to each AI agent instance
   - When updating numbered steps, always update all subsequent steps to maintain order
 ---
+## 2026-02-01 - US-002
+- Added specifications scaffolding to install.sh
+- Created specifications/ directory in $TARGET_DIR during installation
+- Wrote template specifications/AGENTS.md with routing rules format
+- Template includes header explaining conventions and note that Ralph never edits specifications
+- No example spec files in template (user adds their own)
+- Files changed: ralph/install.sh
+- **Learnings for future iterations:**
+  - Use `cat << 'EOF'` (single quotes) to avoid variable expansion in heredocs when writing literal template content
+---
