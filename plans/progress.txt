@@ -49,3 +49,30 @@
 - **Learnings for future iterations:**
   - Use `cat << 'EOF'` (single quotes) to avoid variable expansion in heredocs when writing literal template content
 ---
+## 2026-02-01 - US-003
+- Added specifications check to ralph/doctor.sh
+- Check always passes (informational only, does not affect FAILED status)
+- Three informational states:
+  - No specifications/ directory: "INFO: No specifications/ directory found (optional)"
+  - specifications/ without AGENTS.md: "INFO: specifications/ exists but missing AGENTS.md index"
+  - specifications/ with AGENTS.md: "PASS: Specifications configured"
+- Check runs after all existing validation checks
+- Files changed: ralph/doctor.sh, plans/prd.json
+- **Learnings for future iterations:**
+  - When adding informational checks to doctor.sh, do not set FAILED=1 or report_fail() - just use echo with INFO or PASS labels
+  - The ralph/ directory is the source distribution; scripts/ralph/ is a local installation (may be out of sync)
+  - Test all three conditional paths (true/false states) for new checks
+---
+## 2026-02-01 - US-004
+- Added Specifications section to ralph/README.md
+- Explained purpose: human-curated project docs for selective AI agent reading
+- Documented specifications/AGENTS.md role as index/router
+- Showed example structure with 3 hypothetical spec files (api-patterns.md, ui-components.md, database-schema.md)
+- Noted that Ralph reads specs selectively and never modifies specification files
+- Kept documentation concise (quick reference level)
+- Files changed: ralph/README.md
+- **Learnings for future iterations:**
+  - When adding documentation to README.md, keep sections brief and focused
+  - Markdown README files don't require typechecking or linting
+  - Example structures help users understand how to organize specification files
+---
