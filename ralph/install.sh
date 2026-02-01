@@ -297,12 +297,11 @@ append_if_missing() {
 }
 
 append_if_missing "$GITIGNORE" ""
-append_if_missing "$GITIGNORE" "# Ralph"
+append_if_missing "$GITIGNORE" "# Ralph working files"
 append_if_missing "$GITIGNORE" ".claude/"
 append_if_missing "$GITIGNORE" "plans/prd.json"
 append_if_missing "$GITIGNORE" "plans/progress.txt"
 append_if_missing "$GITIGNORE" "plans/.last-branch"
-append_if_missing "$GITIGNORE" "plans/archive/"
 
 # Generate README.md
 echo "Generating README.md..."
