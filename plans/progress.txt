@@ -1,5 +1,6 @@
 ## Codebase Patterns
 - To unit test shell functions defined in a script without side effects, extract them using sed: `eval "$(sed -n '/^func() {/,/^}/p' script.sh)"`
+- The ralph/AGENTS.md file is the instructions file given to each AI agent instance (copied to ralph/ directory during installation)
 
 ## 2026-01-31 - US-004
 - Implemented robust path validation in `ralph/install.sh`.
@@ -27,4 +28,14 @@
 - **Learnings for future iterations:**
   - Testing internal shell functions is possible by extracting them with `sed` and `eval`, allowing unit testing without running the full script side effects.
   - `os.path.abspath` in Python (used for expansion) strips trailing slashes, so expectations should match that behavior.
+---
+## 2025-02-01 - US-001
+- Updated ralph/AGENTS.md to include specifications system awareness
+- Added step 5 to check for specifications/AGENTS.md and read relevant specifications based on current story context
+- Renumbered steps 5-10 to 6-11
+- Added rule in Important section: "Do NOT edit anything in the specifications/ directory"
+- Files changed: ralph/AGENTS.md
+- **Learnings for future iterations:**
+  - ralph/AGENTS.md is the main instruction file given to each AI agent instance
+  - When updating numbered steps, always update all subsequent steps to maintain order
 ---
