@@ -21,6 +21,24 @@ Ralph spawns fresh AI agent instances (OpenCode by default) in a loop. Each iter
 
 When all stories have `passes: true`, Ralph outputs `<promise>COMPLETE</promise>` and exits.
 
+## Specifications
+
+The `specifications/` directory contains human-curated project documentation that AI agents read selectively. This provides project-specific context without loading unnecessary files.
+
+**How it works:**
+- `specifications/AGENTS.md` acts as an index/router that tells agents which specs to read for each story
+- Ralph reads specifications **selectively** based on the current story context (not all files at once)
+- Ralph **never edits** specification files - they are human-maintained only
+
+**Example structure:**
+```
+specifications/
+├── AGENTS.md                   # Index file - lists all specs and when to read them
+├── api-patterns.md           # Read when working on API endpoints
+├── ui-components.md          # Read when modifying UI code
+└── database-schema.md        # Read when working on data models
+```
+
 ## Usage
 
 ```bash
