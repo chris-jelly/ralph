@@ -111,3 +111,19 @@
   - AGENTS_plan.md follows same structure as AGENTS.md but is read-only (no code changes)
   - Plan mode outputs findings to implementation_plan.md instead of progress.txt
   - Subagents are mentioned as optional tool for parallel searches in prompt instructions
+## 2026-02-02 - US-004
+- Created ralph/AGENTS_summary.md with instructions for summary mode
+- Instructs agent to read plans/progress.txt and plans/prd.json to understand what was built
+- Instructs agent to read relevant specs/*.md files via specs/AGENTS.md routing
+- Instructs agent to generate plans/suggested_spec_changes.md with specific recommendations (specs needing updates, missing specs, inconsistencies, patterns to document)
+- Explicitly forbids modifying specs/ directory or source code files
+- Uses <promise>COMPLETE</promise> signal when summary is ready
+- No model-specific references
+- Follows same style and structure as AGENTS.md and AGENTS_plan.md
+- All existing tests pass (test_validation.sh, test_install_paths.sh, test_us003_integration.sh)
+- Files changed: ralph/AGENTS_summary.md, plans/prd.json
+- **Learnings for future iterations:**
+  - Summary mode documentation files (AGENTS_summary.md) follow the same pattern as AGENTS.md and AGENTS_plan.md
+  - Documentation .md files don't require bash syntax checking or linting (they're markdown)
+  - When creating agent instruction files, ensure explicit constraints are clear (no code changes, no spec edits)
+---
