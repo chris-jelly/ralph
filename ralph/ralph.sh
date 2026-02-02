@@ -200,6 +200,22 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
+    echo "Agent signaled COMPLETE. Verifying PRD..."
+    
+    # Verify all stories actually pass in prd.json
+    if command -v jq &>/dev/null && [ -f "$PRD_FILE" ]; then
+      INCOMPLETE=$(jq '[.userStories[] | select(.passes != true)] | length' "$PRD_FILE" 2>/dev/null || echo "")
+      if [ -n "$INCOMPLETE" ] && [ "$INCOMPLETE" -gt 0 ]; then
+        echo "WARNING: Agent claimed COMPLETE but $INCOMPLETE story(ies) still have passes != true in prd.json"
+        echo "Continuing iterations..."
+        sleep 2
+        continue
+      fi
+      echo "Verified: all stories pass in prd.json"
+    else
+      echo "Note: jq not available or prd.json missing, skipping verification"
+    fi
+    
     echo "Ralph completed all tasks!"
     echo "Completed at iteration $i of $MAX_ITERATIONS"
     exit 0
