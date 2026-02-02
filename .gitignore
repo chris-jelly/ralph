@@ -2,10 +2,6 @@
 plans/prd.json
 plans/progress.txt
 plans/.last-branch
-plans/archive/
-
-# Archive is optional to commit
-# plans/archive/
 
 # OS files
 .DS_Store
