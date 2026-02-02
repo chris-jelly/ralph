@@ -53,14 +53,28 @@ else
     report_fail "AGENTS.md not found in $SCRIPT_DIR" "Re-run install.sh or copy AGENTS.md manually"
 fi
 
-# 3. plans/ directory exists
+# 3. AGENTS_plan.md exists (required for plan mode)
+if [[ -f "$SCRIPT_DIR/AGENTS_plan.md" ]]; then
+    echo -e "[$PASS] AGENTS_plan.md exists"
+else
+    report_fail "AGENTS_plan.md not found in $SCRIPT_DIR" "Re-run install.sh"
+fi
+
+# 4. AGENTS_summary.md exists (required for summary mode)
+if [[ -f "$SCRIPT_DIR/AGENTS_summary.md" ]]; then
+    echo -e "[$PASS] AGENTS_summary.md exists"
+else
+    report_fail "AGENTS_summary.md not found in $SCRIPT_DIR" "Re-run install.sh"
+fi
+
+# 5. plans/ directory exists
 if [[ -d "$REPO_ROOT/plans" ]]; then
     echo -e "[$PASS] plans/ directory exists"
 else
     report_fail "plans/ directory not found at $REPO_ROOT/plans" "Create it with: mkdir -p plans"
 fi
 
-# 4. .gitignore has Ralph entries
+# 6. .gitignore has Ralph entries
 if [[ -f "$REPO_ROOT/.gitignore" ]]; then
     # Check for .claude/ or # Ralph
     if grep -qF ".claude/" "$REPO_ROOT/.gitignore" || grep -qF "# Ralph" "$REPO_ROOT/.gitignore"; then
@@ -77,7 +91,7 @@ if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
     source "$SCRIPT_DIR/ralph.conf"
 fi
 
-# 5. CLI Tool
+# 7. CLI Tool
 TOOL="${RALPH_TOOL:-opencode}"
 if command -v "$TOOL" >/dev/null 2>&1; then
     echo -e "[$PASS] Tool '$TOOL' is installed"
@@ -85,7 +99,7 @@ else
     report_fail "Tool '$TOOL' not found in PATH" "Install '$TOOL' or set RALPH_TOOL environment variable"
 fi
 
-# 6. ralph.sh runs
+# 8. ralph.sh runs
 if [[ -x "$SCRIPT_DIR/ralph.sh" ]]; then
     if "$SCRIPT_DIR/ralph.sh" --help >/dev/null 2>&1; then
         echo -e "[$PASS] ralph.sh runs successfully"
@@ -94,7 +108,14 @@ if [[ -x "$SCRIPT_DIR/ralph.sh" ]]; then
     fi
 fi
 
-# 7. specs/ directory (informational only)
+# 9. plans/implementation_plan.md (informational only)
+if [[ -f "$REPO_ROOT/plans/implementation_plan.md" ]]; then
+    echo -e "[$PASS] implementation_plan.md exists"
+else
+    echo "[INFO] implementation_plan.md not found (optional: create for plan mode)"
+fi
+
+# 10. specs/ directory (informational only)
 if [[ -d "$REPO_ROOT/specs" ]]; then
     if [[ -f "$REPO_ROOT/specs/AGENTS.md" ]]; then
         echo -e "[$PASS] Specs configured"
