@@ -94,15 +94,15 @@ if [[ -x "$SCRIPT_DIR/ralph.sh" ]]; then
     fi
 fi
 
-# 7. specifications/ directory (informational only)
-if [[ -d "$REPO_ROOT/specifications" ]]; then
-    if [[ -f "$REPO_ROOT/specifications/AGENTS.md" ]]; then
-        echo -e "[$PASS] Specifications configured"
+# 7. specs/ directory (informational only)
+if [[ -d "$REPO_ROOT/specs" ]]; then
+    if [[ -f "$REPO_ROOT/specs/AGENTS.md" ]]; then
+        echo -e "[$PASS] Specs configured"
     else
-        echo "[INFO] specifications/ exists but missing AGENTS.md index"
+        echo "[INFO] specs/ exists but missing AGENTS.md index"
     fi
 else
-    echo "[INFO] No specifications/ directory found (optional)"
+    echo "[INFO] No specs/ directory found (optional)"
 fi
 
 if [[ "$FAILED" -eq 0 ]]; then
