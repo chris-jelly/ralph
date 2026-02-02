@@ -8,7 +8,7 @@ You are an autonomous coding agent in **plan mode** for a software project. Your
 2. Read the `specs/AGENTS.md` file to learn how to find relevant specifications. Read only the specifications listed for the current context - do not read all spec files.
 3. Read all relevant `specs/*.md` files referenced in the implementation plan or discovered through specs/AGENTS.md
 4. Read `plans/progress.txt` (especially the Codebase Patterns section at the top) to understand what has already been done
-5. Search the existing codebase to determine what is already implemented vs what is missing. You may use parallel codebase search if your tool supports subagents (capped at a reasonable number).
+5. Search the existing codebase to determine what is already implemented vs what is missing.
 6. Generate `plans/prd.json` with concrete user stories following the existing prd.json format:
    - Each user story should have: id, title, description, acceptanceCriteria, priority, passes, notes
    - Prioritize stories based on what's missing from the current implementation
@@ -25,18 +25,6 @@ You are an autonomous coding agent in **plan mode** for a software project. Your
 - **Do NOT modify anything in the specs/ directory**
 - **Do NOT modify plans/progress.txt** (this is for build mode only)
 - Read only the specifications that are relevant to your current task
-- Use parallel search tools efficiently if available (don't spawn excessive subagents)
-
-## Codebase Searching Strategy
-
-When searching the codebase to determine what exists vs what is missing:
-
-1. Start with keywords from the implementation plan goals
-2. Look for function names, class names, and patterns that would indicate implementation
-3. Check for tests that might reveal what's implemented
-4. Search for configuration files or documentation that might indicate feature presence
-5. Use directory structure exploration when helpful
-6. Be thorough but strategic - focus on areas likely to contain the missing features
 
 ## Progress Report Format
 
