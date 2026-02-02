@@ -238,12 +238,12 @@ mkdir -p "$INSTALL_PATH"
 
 # Create plans directory in target root
 mkdir -p "$TARGET_DIR/plans"
-mkdir -p "$TARGET_DIR/specifications"
+mkdir -p "$TARGET_DIR/specs"
 # Create .gitkeep
 touch "$TARGET_DIR/plans/.gitkeep"
 
-# Create specifications/AGENTS.md template
-cat << 'EOF' > "$TARGET_DIR/specifications/AGENTS.md"
+# Create specs/AGENTS.md template
+cat << 'EOF' > "$TARGET_DIR/specs/AGENTS.md"
 # Project Specifications for AI Agents
 
 This directory contains human-curated documentation and guidance specific to this project. AI agents (like Ralph) read these files selectively to understand project patterns, conventions, and requirements without loading unnecessary context.
@@ -251,7 +251,7 @@ This directory contains human-curated documentation and guidance specific to thi
 ## How Ralph Uses Specifications
 
 Ralph reads specifications files **selectively** based on the current user story:
-1. Before starting a story, Ralph reads this file (`specifications/AGENTS.md`)
+1. Before starting a story, Ralph reads this file (\`specs/AGENTS.md\`)
 2. This file tells Ralph which specification files are relevant to the current story's context
 3. Ralph reads **only** those specification files - not the entire directory
 
@@ -259,25 +259,45 @@ Ralph reads specifications files **selectively** based on the current user story
 
 For each specification file you create, add it below with a routing rule that tells agents **when** to read it.
 
-```markdown
+\`\`\`markdown
 ## Example Spec
 
-- **File**: `specifications/example-spec.md`
+- **File**: \`specs/example-spec.md\`
 - **When to read**: When working on [feature/component/capability]
 - **Context**: [Brief description of what this spec covers]
-```
+\`\`\`
 
 Replace the above example with your actual specifications. You can add as many as needed.
 
 ## Important
 
-- Ralph **never edits** files in the `specifications/` directory
+- Ralph **never edits** files in the \`specs/\` directory
 - Specifications are maintained by humans; Ralph only reads them
 - Keep specifications focused and relevant to help agents work efficiently
 
 ---
 
 Your specifications here:
+EOF
+
+# Create plans/implementation_plan.md template
+cat << 'EOF' > "$TARGET_DIR/plans/implementation_plan.md"
+# Implementation Plan
+
+Edit this file with your planning context before running `./ralph.sh plan`.
+
+## Goal
+
+[Describe what you want to accomplish in this planning cycle]
+
+## Relevant Specs
+
+List spec files that are relevant to this planning session:
+- specs/[spec-name].md - [brief description]
+
+## Context
+
+[Provide any context about the current state of the project, recent changes, or blockers]
 EOF
 
 echo "Copying files from $SOURCE_DIR..."
@@ -297,6 +317,8 @@ copy_file() {
 copy_file "$SOURCE_DIR/ralph.sh" "$INSTALL_PATH/"
 copy_file "$SOURCE_DIR/doctor.sh" "$INSTALL_PATH/"
 copy_file "$SOURCE_DIR/AGENTS.md" "$INSTALL_PATH/"
+copy_file "$SOURCE_DIR/AGENTS_plan.md" "$INSTALL_PATH/"
+copy_file "$SOURCE_DIR/AGENTS_summary.md" "$INSTALL_PATH/"
 copy_file "$SOURCE_DIR/prd.json.example" "$INSTALL_PATH/"
 
 # Make scripts executable
@@ -340,7 +362,10 @@ append_if_missing "$GITIGNORE" "# Ralph working files"
 append_if_missing "$GITIGNORE" ".claude/"
 append_if_missing "$GITIGNORE" "plans/prd.json"
 append_if_missing "$GITIGNORE" "plans/progress.txt"
+append_if_missing "$GITIGNORE" "plans/implementation_plan.md"
+append_if_missing "$GITIGNORE" "plans/suggested_spec_changes.md"
 append_if_missing "$GITIGNORE" "plans/.last-branch"
+append_if_missing "$GITIGNORE" "plans/archive/"
 
 # Generate README.md
 echo "Generating README.md..."
@@ -355,28 +380,57 @@ Ralph is an autonomous AI agent loop that works through your PRD items one by on
 - **Max Iterations**: $MAX_ITERATIONS
 - **Plans Directory**: ../plans/
 
+## Modes
+
+Ralph supports three operational modes:
+
+### Plan Mode
+Generate a PRD from your implementation plan and specs.
+
+\`\`\`bash
+./$RALPH_DIR_NAME/ralph.sh plan [max_iterations]
+\`\`\`
+
+- Reads \`plans/implementation_plan.md\` and relevant \`specs/*.md\` files
+- Generates \`plans/prd.json\` with concrete user stories
+- Updates \`plans/implementation_plan.md\` with findings
+- Does NOT modify source code or specs
+
+### Build Mode
+Build features from your PRD.
+
+\`\`\`bash
+./$RALPH_DIR_NAME/ralph.sh [max_iterations]
+\`\`\`
+
+- Reads \`plans/prd.json\`
+- Implements highest-priority user stories
+- Runs tests, commits changes, repeats until complete
+- Default mode (if no arguments or just a number)
+
+### Summary Mode
+Analyze completed runs and suggest spec changes.
+
+\`\`\`bash
+./$RALPH_DIR_NAME/ralph.sh summary
+\`\`\`
+
+- Reads \`plans/progress.txt\` and \`plans/prd.json\`
+- Generates \`plans/suggested_spec_changes.md\`
+- Does NOT modify specs or source code
+
 ## Quick Start
 
-1. **Define your project**: Edit \`plans/prd.json\` (copied from example).
-2. **Run Ralph**:
-   \`\`\`bash
-   ./$RALPH_DIR_NAME/ralph.sh
-   \`\`\`
-   
-## Usage
-
-Ralph will:
-1. Read the PRD.
-2. Pick the highest priority incomplete story.
-3. Use **$TOOL** to implement it.
-4. Run tests and checks.
-5. Commit changes.
-6. Repeat until done or max iterations ($MAX_ITERATIONS) reached.
+1. **Write specs** (if applicable): Add spec files to \`specs/\` directory.
+2. **Create implementation plan**: Edit \`plans/implementation_plan.md\` with your context.
+3. **Generate PRD**: Run \`./ralph.sh plan\` to create \`plans/prd.json\`.
+4. **Build features**: Review \`plans/prd.json\`, then run \`./ralph.sh\` to implement.
+5. **Optional summary**: Run \`./ralph.sh summary\` for spec update suggestions.
 
 ## Commands
 
-- Run Ralph: \`./ralph.sh\`
-- Run Validation: \`./doctor.sh\`
+- Run Ralph: \`./ralph.sh [mode] [max_iterations]\`
+- Run validation: \`./doctor.sh\`
 
 For full documentation, see [Ralph Documentation](https://github.com/example/ralph)
 EOF
