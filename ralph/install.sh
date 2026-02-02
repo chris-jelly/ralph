@@ -238,8 +238,47 @@ mkdir -p "$INSTALL_PATH"
 
 # Create plans directory in target root
 mkdir -p "$TARGET_DIR/plans"
+mkdir -p "$TARGET_DIR/specifications"
 # Create .gitkeep
 touch "$TARGET_DIR/plans/.gitkeep"
+
+# Create specifications/AGENTS.md template
+cat << 'EOF' > "$TARGET_DIR/specifications/AGENTS.md"
+# Project Specifications for AI Agents
+
+This directory contains human-curated documentation and guidance specific to this project. AI agents (like Ralph) read these files selectively to understand project patterns, conventions, and requirements without loading unnecessary context.
+
+## How Ralph Uses Specifications
+
+Ralph reads specifications files **selectively** based on the current user story:
+1. Before starting a story, Ralph reads this file (`specifications/AGENTS.md`)
+2. This file tells Ralph which specification files are relevant to the current story's context
+3. Ralph reads **only** those specification files - not the entire directory
+
+## Adding Specifications
+
+For each specification file you create, add it below with a routing rule that tells agents **when** to read it.
+
+```markdown
+## Example Spec
+
+- **File**: `specifications/example-spec.md`
+- **When to read**: When working on [feature/component/capability]
+- **Context**: [Brief description of what this spec covers]
+```
+
+Replace the above example with your actual specifications. You can add as many as needed.
+
+## Important
+
+- Ralph **never edits** files in the `specifications/` directory
+- Specifications are maintained by humans; Ralph only reads them
+- Keep specifications focused and relevant to help agents work efficiently
+
+---
+
+Your specifications here:
+EOF
 
 echo "Copying files from $SOURCE_DIR..."
 
