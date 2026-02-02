@@ -54,17 +54,17 @@ Analyzes a completed run and suggests improvements to your specs. Reads `plans/p
 The `specs/` directory contains human-curated project documentation that AI agents read selectively. This provides project-specific context without loading unnecessary files.
 
 **How it works:**
-- `specs/AGENTS.md` acts as an index/router that tells agents which specs to read for each story
+- `specs/README.md` acts as an index that lists all specs organized by section with markdown tables
 - Ralph reads specifications **selectively** based on the current story context (not all files at once)
 - Ralph **never edits** specification files - they are human-maintained only
 
 **Example structure:**
 ```
 specs/
-├── AGENTS.md                   # Index file - lists all specs and when to read them
-├── api-patterns.md           # Read when working on API endpoints
-├── ui-components.md          # Read when modifying UI code
-└── database-schema.md        # Read when working on data models
+├── README.md                   # Index file - sections with tables listing specs and their purpose
+├── api-patterns.md             # Read when working on API endpoints
+├── ui-components.md            # Read when modifying UI code
+└── database-schema.md          # Read when working on data models
 ```
 
 ## Usage

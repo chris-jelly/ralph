@@ -117,10 +117,10 @@ fi
 
 # 10. specs/ directory (informational only)
 if [[ -d "$REPO_ROOT/specs" ]]; then
-    if [[ -f "$REPO_ROOT/specs/AGENTS.md" ]]; then
+    if [[ -f "$REPO_ROOT/specs/README.md" ]]; then
         echo -e "[$PASS] Specs configured"
     else
-        echo "[INFO] specs/ exists but missing AGENTS.md index"
+        echo "[INFO] specs/ exists but missing README.md index"
     fi
 else
     echo "[INFO] No specs/ directory found (optional)"

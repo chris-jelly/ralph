@@ -242,42 +242,36 @@ mkdir -p "$TARGET_DIR/specs"
 # Create .gitkeep
 touch "$TARGET_DIR/plans/.gitkeep"
 
-# Create specs/AGENTS.md template
-cat << 'EOF' > "$TARGET_DIR/specs/AGENTS.md"
-# Project Specifications for AI Agents
+# Create specs/README.md template
+cat << 'EOF' > "$TARGET_DIR/specs/README.md"
+# Project Specifications
 
-This directory contains human-curated documentation and guidance specific to this project. AI agents (like Ralph) read these files selectively to understand project patterns, conventions, and requirements without loading unnecessary context.
+Human-curated documentation and guidance for this project. AI agents read these files selectively to understand project patterns, conventions, and requirements.
 
-## How Ralph Uses Specifications
+Ralph reads this file before each story to determine which specs are relevant. Add your specs to the appropriate section below, or create new sections as needed.
 
-Ralph reads specifications files **selectively** based on the current user story:
-1. Before starting a story, Ralph reads this file (\`specs/AGENTS.md\`)
-2. This file tells Ralph which specification files are relevant to the current story's context
-3. Ralph reads **only** those specification files - not the entire directory
+> **Note:** Ralph never edits files in `specs/`. Specifications are maintained by humans only.
 
-## Adding Specifications
+## Architecture
 
-For each specification file you create, add it below with a routing rule that tells agents **when** to read it.
+High-level system design, infrastructure, and structural decisions.
 
-\`\`\`markdown
-## Example Spec
+| Spec | Purpose |
+|------|---------|
 
-- **File**: \`specs/example-spec.md\`
-- **When to read**: When working on [feature/component/capability]
-- **Context**: [Brief description of what this spec covers]
-\`\`\`
+## Conventions
 
-Replace the above example with your actual specifications. You can add as many as needed.
+Coding standards, naming patterns, and project-specific rules.
 
-## Important
+| Spec | Purpose |
+|------|---------|
 
-- Ralph **never edits** files in the \`specs/\` directory
-- Specifications are maintained by humans; Ralph only reads them
-- Keep specifications focused and relevant to help agents work efficiently
+## Features
 
----
+Feature-specific context, requirements, and domain knowledge.
 
-Your specifications here:
+| Spec | Purpose |
+|------|---------|
 EOF
 
 # Create plans/implementation_plan.md template

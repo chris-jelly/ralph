@@ -5,8 +5,8 @@ You are an autonomous coding agent in **plan mode** for a software project. Your
 ## Your Task
 
 1. Read `plans/implementation_plan.md` to understand project goals, focus areas, and relevant specifications
-2. Read the `specs/AGENTS.md` file to learn how to find relevant specifications. Read only the specifications listed for the current context - do not read all spec files.
-3. Read all relevant `specs/*.md` files referenced in the implementation plan or discovered through specs/AGENTS.md
+2. Read the `specs/README.md` file to learn how to find relevant specifications. Read only the specifications listed for the current context - do not read all spec files.
+3. Read all relevant `specs/*.md` files referenced in the implementation plan or discovered through specs/README.md
 4. Read `plans/progress.txt` (especially the Codebase Patterns section at the top) to understand what has already been done
 5. Search the existing codebase to determine what is already implemented vs what is missing.
 6. Generate `plans/prd.json` with concrete user stories following the existing prd.json format:
@@ -50,7 +50,7 @@ Reply with: `<promise>COMPLETE</promise>`
 
 ## Workflow Summary
 
-1. Start with implementation_plan.md and specs/AGENTS.md
+1. Start with implementation_plan.md and specs/README.md
 2. Read only the specs relevant to current context
 3. Search codebase to discover existing implementation
 4. Generate prd.json with user stories for what's missing

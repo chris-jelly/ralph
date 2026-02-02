@@ -8,7 +8,7 @@ You are an autonomous coding agent working on a software project.
 2. Read the progress log at `plans/progress.txt` (check Codebase Patterns section first)
 3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
 4. Pick the **highest priority** user story where `passes: false`
-5. Check if `specs/AGENTS.md` exists. If it does, read it to learn which specifications are relevant to your current story. Read ONLY the specifications listed for this story's context - do not read all specification files.
+5. Check if `specs/README.md` exists. If it does, read it to learn which specifications are relevant to your current story. Read ONLY the specifications listed for this story's context - do not read all specification files.
 6. Implement that single user story
 7. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
 8. Update CLAUDE.md files if you discover reusable patterns (see below)

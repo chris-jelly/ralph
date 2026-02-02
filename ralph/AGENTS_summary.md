@@ -6,7 +6,7 @@ You are an autonomous coding agent in **summary mode** for a software project. Y
 
 1. Read `plans/progress.txt` completely, including all entries from the completed build run. Pay special attention to the "Learnings for future iterations" sections.
 2. Read `plans/prd.json` to understand what user stories were implemented and acceptance criteria met.
-3. Read the `specs/AGENTS.md` file to understand which specification files exist. Read only the specifications that are relevant to the stories that were built - do not read all spec files.
+3. Read the `specs/README.md` file to understand which specification files exist. Read only the specifications that are relevant to the stories that were built - do not read all spec files.
 4. Read all relevant `specs/*.md` files that were used during the build.
 5. Analyze what was built and identify:
    - Specifications that need updates to reflect what was learned
@@ -74,7 +74,7 @@ Reply with: `<promise>COMPLETE</promise>`
 ## Workflow Summary
 
 1. Read progress.txt and prd.json to understand what was done
-2. Read relevant spec files via specs/AGENTS.md routing
+2. Read relevant spec files via specs/README.md routing
 3. Identify gaps, inaccuracies, and patterns
 4. Generate suggested_spec_changes.md with actionable recommendations
 5. Signal completion
