@@ -76,3 +76,38 @@
   - Markdown README files don't require typechecking or linting
   - Example structures help users understand how to organize specification files
 ---
+## 2026-02-02 - US-002
+- Added mode argument parsing to ralph.sh supporting three modes: build, plan, summary
+- Build mode preserves all existing behavior and uses AGENTS.md as prompt
+- Plan mode archives existing prd.json/progress.txt to plans/archive/ before starting, uses AGENTS_plan.md
+- Summary mode runs as single iteration using AGENTS_summary.md, no archiving
+- Updated --help to document all modes and CLI examples
+- Build mode: default behavior, './ralph.sh [max_iterations]'
+- Plan mode: './ralph.sh plan [max_iterations]', archives first
+- Summary mode: './ralph.sh summary', single iteration no loop
+- Syntax check: bash -n passes
+- All existing tests pass (test_validation.sh, test_install_paths.sh, test_us003_integration.sh)
+- Shellcheck not installed in environment (accepted, noted in acceptance criteria)
+- Files changed: ralph/ralph.sh
+- **Learnings for future iterations:**
+  - Argument parsing for modes should be done early, before any path setup
+  - When adding new modes, preserve all existing build-mode behavior (tool selection, COMPLETE detection, sleep, branch archival)
+  - Summary mode requires special handling: single iteration, no loop, no archive, no branch tracking
+  - Plan mode archiving resets progress.txt with fresh header to start new planning cycle
+---
+## 2026-02-02 - US-003
+- Created ralph/AGENTS_plan.md with instructions for plan mode
+- Prompts agent to read plans/implementation_plan.md and specs/AGENTS.md for routing
+- Instructs agent to search codebase to determine what exists vs what is missing
+- Instructs agent to generate prd.json with prioritized user stories
+- Instructs agent to update implementation_plan.md with findings (what exists, missing, blockers)
+- Explicitly forbids modifying source code files or specs/ directory
+- Mentions parallel subagents can be used for codebase search
+- Uses <promise>COMPLETE</promise> signal when plan is ready
+- No model-specific references
+- All existing tests pass (test_validation.sh, test_install_paths.sh, test_us003_integration.sh)
+- Files changed: ralph/AGENTS_plan.md
+- **Learnings for future iterations:**
+  - AGENTS_plan.md follows same structure as AGENTS.md but is read-only (no code changes)
+  - Plan mode outputs findings to implementation_plan.md instead of progress.txt
+  - Subagents are mentioned as optional tool for parallel searches in prompt instructions
