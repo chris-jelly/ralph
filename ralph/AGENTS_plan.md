@@ -7,7 +7,7 @@ You are an autonomous coding agent in **plan mode** for a software project. Your
 1. Read `plans/implementation_plan.md` to understand project goals, focus areas, and relevant specifications
 2. Read the `specs/README.md` file to learn how to find relevant specifications. Read only the specifications listed for the current context - do not read all spec files.
 3. Read all relevant `specs/*.md` files referenced in the implementation plan or discovered through specs/README.md
-4. Read `plans/progress.txt` (especially the Codebase Patterns section at the top) to understand what has already been done
+4. Read `plans/progress.txt` to understand what has already been done (including any Codebase Patterns suggestion blocks)
 5. Search the existing codebase to determine what is already implemented vs what is missing.
 6. Generate `plans/prd.json` with concrete user stories following the existing prd.json format:
    - Each user story should have: id, title, description, acceptanceCriteria, priority, passes, notes
@@ -57,4 +57,4 @@ Reply with: `<promise>COMPLETE</promise>`
 5. Document findings back into implementation_plan.md
 6. Signal completion
 
-This mode produces a complete plan (prd.json) but no code changes. The build mode will execute the plan.
+This mode produces a complete plan (prd.json) but no code changes. 

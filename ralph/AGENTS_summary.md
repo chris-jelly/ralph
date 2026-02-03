@@ -5,21 +5,25 @@ You are an autonomous coding agent in **summary mode** for a software project. Y
 ## Your Task
 
 1. Read `plans/progress.txt` completely, including all entries from the completed build run. Pay special attention to the "Learnings for future iterations" sections.
-2. Read `plans/prd.json` to understand what user stories were implemented and acceptance criteria met.
-3. Read the `specs/README.md` file to understand which specification files exist. Read only the specifications that are relevant to the stories that were built - do not read all spec files.
-4. Read all relevant `specs/*.md` files that were used during the build.
-5. Analyze what was built and identify:
+2. In `plans/progress.txt`, also search for any Codebase Patterns suggestion blocks delimited by:
+   - `<!-- RALPH_CODEBASE_PATTERNS_SUGGESTIONS_START -->`
+   - `<!-- RALPH_CODEBASE_PATTERNS_SUGGESTIONS_END -->`
+   Treat these as proposed updates to the codebase patterns documentation.
+3. Read `plans/prd.json` to understand what user stories were implemented and acceptance criteria met.
+4. Read the `specs/README.md` file to understand which specification files exist. Read only the specifications that are relevant to the stories that were built - do not read all spec files.
+5. Read all relevant `specs/*.md` files that were used during the build.
+6. Analyze what was built and identify:
    - Specifications that need updates to reflect what was learned
    - Missing specifications that should have existed but weren't referenced
    - Inconsistencies between what was built and what specs say
    - Patterns discovered during the build that should be documented in specs
-6. Generate `plans/suggested_spec_changes.md` with your recommendations:
+7. Generate `plans/suggested_spec_changes.md` with your recommendations:
    - **Specs needing updates**: List which specs should change and why
    - **Missing specs**: List specs that should have existed based on what was built
    - **Inconsistencies discovered**: Conflicts or gaps between implementation and documentation
    - **Patterns to document**: Reusable patterns that would help future iterations
    - Include specific line references or quotes from progress.txt when helpful
-7. When complete, reply with: `<promise>COMPLETE</promise>`
+8. When complete, reply with: `<promise>COMPLETE</promise>`
 
 ## Important Constraints
 
@@ -34,10 +38,11 @@ When analyzing the completed build:
 
 1. Review each user story in prd.json and its corresponding progress.txt entry
 2. Look for "Learnings for future iterations" sections to capture discovered patterns
-3. Cross-reference what was built against what specs say should exist
-4. Identify areas where the implementation revealed gaps or inaccuracies in specs
-5. Note any "gotchas" or non-obvious requirements that should be documented
-6. Identify API patterns, conventions, or dependencies that weren't in specs
+3. Extract any Codebase Patterns suggestion blocks (between the start/end markers) and incorporate the actionable items into "Patterns That Should Be Documented" (and/or "Specs Needing Updates" if you decide it belongs in a spec)
+4. Cross-reference what was built against what specs say should exist
+5. Identify areas where the implementation revealed gaps or inaccuracies in specs
+6. Note any "gotchas" or non-obvious requirements that should be documented
+7. Identify API patterns, conventions, or dependencies that weren't in specs
 
 ## Output Format
 
@@ -64,7 +69,7 @@ Be specific and actionable. Cite evidence from progress.txt and prd.json where r
 ## Stop Condition
 
 When you have:
-1. Read all progress.txt entries from the completed run
+1. Read all progress.txt entries from the completed run (including any Codebase Patterns suggestion blocks)
 2. Read prd.json to understand what was built
 3. Read relevant spec files
 4. Generated suggested_spec_changes.md with actionable recommendations
@@ -73,7 +78,7 @@ Reply with: `<promise>COMPLETE</promise>`
 
 ## Workflow Summary
 
-1. Read progress.txt and prd.json to understand what was done
+1. Read progress.txt and prd.json to understand what was done (including Codebase Patterns suggestion blocks)
 2. Read relevant spec files via specs/README.md routing
 3. Identify gaps, inaccuracies, and patterns
 4. Generate suggested_spec_changes.md with actionable recommendations

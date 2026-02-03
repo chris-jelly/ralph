@@ -131,7 +131,7 @@ Ralph maintains memory across iterations through:
 1. **Git history** - Each story is a separate commit
 2. **`plans/progress.txt`** - Running log of what was done and learned
 3. **`plans/prd.json`** - Updated `passes` status for each story
-4. **Codebase Patterns** - Consolidated learnings at the top of progress.txt
+4. **Codebase Patterns suggestions** - Optional blocks embedded in progress entries
 
 Each AI instance starts fresh with clean context, but these files provide continuity.
 

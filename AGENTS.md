@@ -4,6 +4,8 @@
 
 Ralph is an autonomous AI agent loop that runs AI coding tools (OpenCode, Claude Code, or others) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context.
 
+**Important:** Before starting work, check [specs/README.md](specs/README.md) for any human-curated specifications relevant to your task.
+
 ## Repository Structure
 
 This repository contains:
@@ -31,7 +33,7 @@ cd flowchart && npm run build
 - `ralph.sh` - The bash loop that spawns fresh AI instances
 - `doctor.sh` - Validation script to check installation health
 - `install.sh` - Installation script for setting up Ralph in other repos
-- `AGENTS.md` - Instructions given to each AI agent instance (copy of root CLAUDE.md)
+- `AGENTS.md` - Instructions given to each AI agent instance
 - `prd.json.example` - Example PRD format for users
 - `README.md` - User-facing documentation
 
@@ -41,7 +43,7 @@ These files get copied to `scripts/ralph/` (or custom location) when installing 
 - Copy of `ralph/` files, installed in this repo for working on Ralph itself
 
 ### Development Files (root)
-- `CLAUDE.md` - Agent instructions for Claude Code working on Ralph itself
+- Agent prompt templates live in `ralph/` and get installed to `scripts/ralph/`
 - `AGENTS.md` - This file - documentation about Ralph
 - `plans/` - Working directory for Ralph runs on this repo
 - `flowchart/` - Interactive React Flow diagram explaining how Ralph works
@@ -62,4 +64,4 @@ npm run dev
 - Each iteration spawns a fresh AI instance (Amp or Claude Code) with clean context
 - Memory persists via git history, `plans/progress.txt`, and `plans/prd.json`
 - Stories should be small enough to complete in one context window
-- Always update AGENTS.md with discovered patterns for future iterations
+- Record reusable patterns in `plans/progress.txt` (and include a Codebase Patterns suggestion block when appropriate)
