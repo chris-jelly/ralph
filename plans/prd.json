@@ -159,6 +159,7 @@
         "Migration detection works correctly"
       ],
       "priority": "medium",
+      "passes": true,
       "notes": "User-friendly migration entry point"
     },
     {

@@ -181,3 +181,20 @@ Started (plan mode): Mon 02 Feb 2026 10:32:58 PM EST
   - Idempotency tests should verify no changes on second run
 
 ---
+## 02/02/2026 10:57 PM - US-010
+- Implemented ralph migrate subcommand in bin/ralph wrapper
+- Added find_migrate_bin() function to locate migrate.sh script
+- Detects old layout (scripts/ralph/ and plans/) and checks for migration need
+- Provides clear guidance showing what will be created during migration
+- Prompts user before running when no flags provided, with --apply default when user confirms
+- Passes through all flags to migrate.sh (--dry-run, --apply, --fix-gitignore, --remove-old, --backup-dir)
+- Gracefully handles case where migration not needed (outputs clear message)
+- All acceptance criteria met
+- Files changed: bin/ralph
+- **Learnings for future iterations:**
+  - find_migrate_bin() pattern mirrors find_doctor_bin() and find_ralph_bin() for consistency
+  - Prompt-before-run pattern with read command provides user confirmation
+  - Conditional flag handling: if user provides flags, use them; otherwise show prompt and default to --apply
+  - Detection logic uses simple existence checks for scripts/ralph/ and plans/ directories
+  - Help message is passed through from migrate.sh via --help flag
+---
