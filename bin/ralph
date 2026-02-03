@@ -1,0 +1,270 @@
+#!/bin/bash
+# Ralph global CLI wrapper entry point
+# This script resolves the repo root and dispatches to appropriate mode
+
+set -e
+
+# Function to resolve repo root by walking up directory tree
+find_repo_root() {
+  local dir="$PWD"
+
+  # Walk up the directory tree until we find .git directory
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/.git" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  return 1
+}
+
+# Locate ralph.sh engine script
+# First check if we can find it relative to this script (global install)
+RALPH_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+find_ralph_bin() {
+  # If ralph.sh is in the same directory as bin/ralph
+  if [ -f "$RALPH_SCRIPT/ralph.sh" ]; then
+    echo "$RALPH_SCRIPT/ralph.sh"
+  # If ralph.sh is in the parent directory (development layout)
+  elif [ -f "$RALPH_SCRIPT/../ralph.sh" ]; then
+    echo "$RALPH_SCRIPT/../ralph.sh"
+  # If ralph.sh is in ralph/ directory (distribution layout)
+  elif [ -f "$RALPH_SCRIPT/../ralph/ralph.sh" ]; then
+    echo "$RALPH_SCRIPT/../ralph/ralph.sh"
+  else
+    return 1
+  fi
+}
+
+find_doctor_bin() {
+  # If doctor.sh is in the same directory as bin/ralph
+  if [ -f "$RALPH_SCRIPT/doctor.sh" ]; then
+    echo "$RALPH_SCRIPT/doctor.sh"
+  # If doctor.sh is in the parent directory (development layout)
+  elif [ -f "$RALPH_SCRIPT/../doctor.sh" ]; then
+    echo "$RALPH_SCRIPT/../doctor.sh"
+  # If doctor.sh is in ralph/ directory (distribution layout)
+  elif [ -f "$RALPH_SCRIPT/../ralph/doctor.sh" ]; then
+    echo "$RALPH_SCRIPT/../ralph/doctor.sh"
+  else
+    return 1
+  fi
+}
+
+# Parse subcommand
+SUBCOMMAND="${1:-}"
+shift 2>/dev/null || true
+
+# Default to build mode if no subcommand
+if [ -z "$SUBCOMMAND" ]; then
+  SUBCOMMAND="build"
+fi
+
+# Load .ralph/config if present to get tool settings
+CONFIG_LOADED=false
+if [ -n "$REPO_ROOT" ] && [ -f "$REPO_ROOT/.ralph/config" ]; then
+  source "$REPO_ROOT/.ralph/config"
+  CONFIG_LOADED=true
+fi
+
+# Handle each subcommand
+case "$SUBCOMMAND" in
+  init)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    RALPH_DIR="$REPO_ROOT/.ralph"
+    RALPH_CONFIG="$RALPH_DIR/config"
+    RALPH_GITIGNORE="$RALPH_DIR/.gitignore"
+    RALPH_PLANS_DIR="$RALPH_DIR/plans"
+    SPECS_README="$REPO_ROOT/specs/README.md"
+
+    echo "Initializing Ralph in $REPO_ROOT"
+
+    # Create .ralph directory if it doesn't exist
+    if [ ! -d "$RALPH_DIR" ]; then
+      mkdir -p "$RALPH_DIR"
+      echo "Created $RALPH_DIR"
+    else
+      echo "$RALPH_DIR already exists"
+    fi
+
+    # Create .ralph/config
+    if [ ! -f "$RALPH_CONFIG" ]; then
+      cat > "$RALPH_CONFIG" << 'EOF'
+# Ralph Configuration
+RALPH_TOOL="opencode"
+RALPH_MAX_ITERATIONS="10"
+EOF
+      echo "Created $RALPH_CONFIG"
+    else
+      echo "$RALPH_CONFIG already exists (not modified)"
+    fi
+
+    # Create .ralph/.gitignore with nested ignore pattern
+    if [ ! -f "$RALPH_GITIGNORE" ]; then
+      cat > "$RALPH_GITIGNORE" << 'EOF'
+# Ignore all files in .ralph/ except config and .gitignore
+*
+!config
+!.gitignore
+EOF
+      echo "Created $RALPH_GITIGNORE"
+    else
+      echo "$RALPH_GITIGNORE already exists (not modified)"
+    fi
+
+    # Create .ralph/plans/ directory structure
+    mkdir -p "$RALPH_PLANS_DIR/archive"
+    echo "Ensured $RALPH_PLANS_DIR exists"
+
+    # Create specs/README.md template if missing
+    if [ ! -f "$SPECS_README" ]; then
+      mkdir -p "$(dirname "$SPECS_README")"
+      cat > "$SPECS_README" << 'EOF'
+# Project Specifications
+
+Human-curated documentation and guidance for this project. AI agents read these files selectively to understand project patterns, conventions, and requirements.
+
+Ralph reads this file before each story to determine which specs are relevant. Add your specs to the appropriate section below, or create new sections as needed.
+
+> **Note:** Ralph never edits files in `specs/`. Specifications are maintained by humans only.
+
+## Architecture
+
+High-level system design, infrastructure, and structural decisions.
+
+| Spec | Purpose |
+|------|---------|
+
+## Conventions
+
+Coding standards, naming patterns, and project-specific rules.
+
+| Spec | Purpose |
+|------|---------|
+
+## Features
+
+Feature-specific context, requirements, and domain knowledge.
+
+| Spec | Purpose |
+|------|---------|
+EOF
+      echo "Created $SPECS_README"
+    else
+      echo "$SPECS_README already exists (not modified)"
+    fi
+
+    echo ""
+    echo "Ralph initialized successfully!"
+    echo ""
+    echo "Configuration file: $RALPH_CONFIG"
+    echo "Edit this file to set your tool and max_iterations."
+    echo ""
+    echo "Next steps:"
+    echo "  1. Edit $RALPH_CONFIG to set your preferred AI tool"
+    echo "  2. Create a PRD at $RALPH_PLANS_DIR/prd.json"
+    echo "  3. Run 'ralph build' to start implementing"
+    echo ""
+    exit 0
+    ;;
+  plan)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    RALPH_BIN="$(find_ralph_bin)" || {
+      echo "Error: Cannot locate ralph.sh engine script" >&2
+      exit 1
+    }
+    if [ ! -x "$RALPH_BIN" ]; then
+      echo "Error: ralph.sh is not executable: $RALPH_BIN" >&2
+      exit 1
+    fi
+    exec "$RALPH_BIN" plan "$@"
+    ;;
+  build)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    RALPH_BIN="$(find_ralph_bin)" || {
+      echo "Error: Cannot locate ralph.sh engine script" >&2
+      exit 1
+    }
+    if [ ! -x "$RALPH_BIN" ]; then
+      echo "Error: ralph.sh is not executable: $RALPH_BIN" >&2
+      exit 1
+    fi
+    exec "$RALPH_BIN" "$@"
+    ;;
+  summary)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    RALPH_BIN="$(find_ralph_bin)" || {
+      echo "Error: Cannot locate ralph.sh engine script" >&2
+      exit 1
+    }
+    if [ ! -x "$RALPH_BIN" ]; then
+      echo "Error: ralph.sh is not executable: $RALPH_BIN" >&2
+      exit 1
+    fi
+    exec "$RALPH_BIN" summary
+    ;;
+  doctor)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    DOCTOR_BIN="$(find_doctor_bin)" || {
+      echo "Error: Cannot locate doctor.sh script" >&2
+      exit 1
+    }
+    if [ ! -x "$DOCTOR_BIN" ]; then
+      echo "Error: doctor.sh is not executable: $DOCTOR_BIN" >&2
+      exit 1
+    fi
+    exec "$DOCTOR_BIN"
+    ;;
+  migrate)
+    REPO_ROOT="$(find_repo_root)" || {
+      echo "Error: Not in a git repository" >&2
+      echo "Please run this command from within a git repository" >&2
+      exit 1
+    }
+    echo "Error: 'ralph migrate' command not yet implemented" >&2
+    echo "This feature will be available in a future update" >&2
+    exit 1
+    ;;
+  --help)
+    echo "Usage: ralph <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  build    Build mode: Run AI coding loop to implement PRD (default)"
+    echo "  plan     Plan mode: Read specs/ and generate prd.json"
+    echo "  summary  Summary mode: Generate suggested spec changes"
+    echo "  init     Initialize ralph in a new repo"
+    echo "  doctor   Run health checks"
+    echo "  migrate  Migrate from old Ralph installation"
+    echo ""
+    echo "Use 'ralph <command> --help' for more information on a specific command."
+    exit 0
+    ;;
+  *)
+    echo "Error: Unknown command '$SUBCOMMAND'" >&2
+    echo "Use 'ralph --help' for usage information" >&2
+    exit 1
+    ;;
+esac

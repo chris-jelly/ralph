@@ -1,0 +1,4 @@
+# Ignore all files in .ralph/ except config and .gitignore
+*
+!config
+!.gitignore

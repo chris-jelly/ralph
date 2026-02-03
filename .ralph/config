@@ -1,0 +1,3 @@
+# Ralph Configuration
+RALPH_TOOL="opencode"
+RALPH_MAX_ITERATIONS="10"

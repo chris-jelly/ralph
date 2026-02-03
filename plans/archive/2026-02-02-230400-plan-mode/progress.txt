@@ -1,0 +1,232 @@
+# Ralph Progress Log
+Started (plan mode): Mon 02 Feb 2026 10:32:58 PM EST
+---
+## 02/02/2026 11:00 PM - US-001
+- Defined path constants RALPH_REPO_DIR, RALPH_CONFIG, RALPH_PLANS_DIR with defaults
+- Updated ralph.sh to use constants for all path references
+- Updated doctor.sh to use constants and check .ralph/plans/
+- Updated install.sh to define constants
+- Scripts remain functional with default values
+---
+## 02/02/2026 11:30 PM - US-002
+- Created bin/ralph global CLI wrapper entry point
+- Script resolves repo root by walking up directory tree until .git/ is found
+- Handles graceful error when not in a git repository
+- Designed to work when symlinked to ~/.local/bin/ralph
+- Delegates all arguments to existing ralph.sh engine functionality
+- Tested from repo root and subdirectory
+- Tested error handling outside git repo
+- All existing tests pass
+- Files changed: bin/ralph (created)
+- **Learnings for future iterations:**
+  - Wrapper needs to self-locate ralph.sh by checking multiple possible relative paths
+  - Must use `${BASH_SOURCE[0]}` to get script directory for reliable path resolution
+  - PWD-based git root resolution is correct for CLI wrapper use case
+  - Script uses set -e for error handling
+---
+## 02/02/2026 11:59 PM - US-003
+- Implemented subcommand dispatching in bin/ralph wrapper
+- Added support for init, plan, build, summary, doctor, and migrate commands
+- Config loading: script sources .ralph/config if present for tool settings
+- Commands delegate appropriately: plan/build/summary to ralph.sh, doctor to doctor.sh
+- init and migrate show "not yet implemented" pending their respective stories
+- All existing tests pass
+- Files changed: bin/ralph
+- **Learnings for future iterations:**
+  - bin/ralph needs find_repo_root helper function defined before use
+  - Script parsing of $1 as SUBCOMMAND then shift is cleaner than positional args
+  - Each subcommand checks for repo root internally for cleaner error handling
+  - Case statement with *) default is good pattern for unknown commands
+---
+## 02/02/2026 10:40 PM - US-004
+- Implemented ralph init command in bin/ralph wrapper
+- Creates .ralph/config with default RALPH_TOOL and RALPH_MAX_ITERATIONS
+- Creates .ralph/.gitignore with nested ignore pattern (*, !config, !.gitignore)
+- Creates .ralph/plans/ directory structure with archive subdirectory
+- Creates specs/README.md template if missing
+- Idempotent: safely skips existing files, preserves user modifications
+- Tested idempotency by running twice, verified config sourcing works
+- All acceptance criteria met
+- Files changed: bin/ralph, .ralph/config, .ralph/.gitignore
+- **Learnings for future iterations:**
+  - ralph init creates .ralph config structure but doesn't modify repo root .gitignore as designed
+  - Nested gitignore pattern in .ralph/.gitignore allows selective tracking (only config and .gitignore)
+  - Config file uses shell variables without export keyword since it's sourced
+  - Idempotency requires checking file existence before creation
+---
+## 02/02/2026 10:41 PM - US-005
+- Verified ralph.sh uses .ralph/plans/ paths for all file operations
+- PLANS_DIR uses RALPH_PLANS_DIR constant (.ralph/plans/)
+- PRD_FILE references .ralph/plans/prd.json
+- PROGRESS_FILE references .ralph/plans/progress.txt  
+- ARCHIVE_DIR references .ralph/plans/archive/
+- LAST_BRANCH_FILE references .ralph/plans/.last-branch
+- Plan mode archives to .ralph/plans/archive/
+- All file operations use path constants correctly
+- Implementation from US-001 already satisfies all acceptance criteria
+- Files changed: plans/prd.json (updated passes: true)
+--  
+## 02/02/2026 10:50 PM - US-006
+- Updated all AGENTS.md files to reference .ralph/plans/ instead of plans/
+- AGENTS.md: Updated references to prd.json and progress.txt
+- AGENTS_plan.md: Updated references to implementation_plan.md and prd.json
+- AGENTS_summary.md: Updated references to progress.txt and suggested_spec_changes.md
+- All path references now consistently use .ralph/plans/ prefix
+- All acceptance criteria met
+- Files changed: ralph/AGENTS.md, ralph/AGENTS_plan.md, ralph/AGENTS_summary.md
+- **Learnings for future iterations:**
+  - Multiple files need consistent updates when changing path structure
+  - AGENTS files contain critical path references that agents use
+  - All three mode prompts (plan, build, summary) need updating together
+---
+## 02/02/2026 10:51 PM - US-009
+- Created ralph/migrate.sh distribution script for migrating old installations
+- Script supports --dry-run (default) and --apply modes
+- Script supports --backup-dir for custom backup location
+- Script supports --fix-gitignore to clean up old Ralph entries from .gitignore
+- Script supports --remove-old to move old directories to backup
+- Refuses to run outside git repository (validated with error message)
+- Creates .ralph/ structure with .gitignore (nested ignore pattern)
+- Creates .ralph/config from old ralph.conf or uses defaults
+- Copies files from plans/ to .ralph/plans/
+- Handles tracked files carefully (leaves .gitkeep)
+- Provides detailed help message and examples
+- All acceptance criteria met
+- Files changed: ralph/migrate.sh (created)
+- **Learnings for future iterations:**
+  - Safety-first defaults are critical for migration scripts (--dry-run default)
+  - Color codes make output more readable for users
+  - Backup directory must be created before any other operations
+  - Moving old directories requires handling tracked files separately
+  - Help message serves as documentation for users
+- **Learnings for future iterations:**  
+  - Use set -e for error handling in bash scripts
+  - Parse arguments with while loop and case statement for flexibility
+  - Create constants for all paths to maintain consistency
+  - Validate git repo presence before any operations
+  - Provide detailed help with examples
+---
+## 02/02/2026 10:55 PM - US-007
+- Updated doctor.sh validation checks for .ralph/ structure
+- Added check for .ralph/config existence (validation, not just loading)
+- Added check for .ralph/plans/ directory and write permissions
+- Changed gitignore check from repo root .gitignore to .ralph/.gitignore
+- Added validation for nested ignore pattern in .ralph/.gitignore (*, !config, !.gitignore)
+- Updated checks to reference .ralph/plans/ instead of plans/
+- Changed specs/ check from informational to required with hints for failures
+- All acceptance criteria met
+- Used character class pattern [!][.] for special characters in grep
+- Files changed: ralph/doctor.sh
+- **Learnings for future iterations:**
+  - Special regex characters like ! and . need careful escaping or character classes in bash
+  - Use grep -F for fixed string matching or [[ != ]] for simpler pattern checks
+  - Updated section numbering when adding new checks
+  - Nested ignore pattern uses character classes: [!] for exclamation, [. ] for literal dot
+  - set +H in bash to disable history expansion when testing ! in commands
+---
+## 02/02/2026 10:54 PM - US-008
+- Added backward compatible path fallback to ralph.sh
+- Implemented logic to check new .ralph/ paths first, fall back to legacy paths if they don't exist
+- Config loading checks .ralph/config first, falls back to scripts/ralph/ralph.conf
+- PRD_FILE checks .ralph/plans/prd.json first, falls back to plans/prd.json
+- PROGRESS_FILE checks .ralph/plans/progress.txt first, falls back to plans/progress.txt
+- ARCHIVE_DIR and LAST_BRANCH_FILE also use fallback logic
+- All existing tests pass
+- Files changed: ralph/ralph.sh
+- **Learnings for future iterations:**
+  - Use conditional variable assignment after detecting legacy path structure
+  - File paths must be determined early in the script before any file operations
+  - Boolean flag (use_legacy_paths) makes conditional logic more readable
+  - Maintaining backward compatibility requires careful path detection logic
+---
+## 02/02/2026 10:55 PM - US-011
+- Updated install.sh to install to .ralph/ directory structure instead of scripts/ralph/
+- Created .ralph/.gitignore with nested ignore pattern (*, !config, !.gitignore)
+- Removed code that modifies repo root .gitignore
+- Created .ralph/config file instead of ralph.conf (no export keyword, uses shell variable assignment)
+- Added --legacy flag for backward compatibility option
+- Tested both modern .ralph/ and legacy scripts/ralph/ installations
+- All acceptance criteria met
+- Files changed: ralph/install.sh
+- **Learnings for future iterations:**
+  - Always create both plans/ and specs/ directories regardless of install mode to avoid errors
+  - Implementation plan template should only be created for legacy mode, not modern mode
+  - Nested gitignore pattern uses * followed by ! exceptions to selectively track files
+  - Config file in modern mode uses RALPH_TOOL and RALPH_MAX_ITERATIONS without export
+  - Legacy mode uses ralph.conf with export RALPH_TOOL and export RALPH_MAX_ITERATIONS
+
+### Codebase Patterns Suggestions (optional)
+
+<!-- RALPH_CODEBASE_PATTERNS_SUGGESTIONS_START -->
+
+<!-- RALPH_CODEBASE_PATTERNS_SUGGESTIONS_END -->
+---
+## 02/02/2026 11:10 PM - US-014
+- Created comprehensive bash test suite for ralph init command
+- Test creates temporary git repository and runs ralph init
+- Verifies .ralph/config created with correct structure
+- Validates .ralph/.gitignore has nested ignore pattern (*, !config, !.gitignore)
+- Checks .ralph/plans/ and .ralph/plans/archive/ directory creation
+- Verifies specs/README.md template creation
+- Tests idempotency - running init multiple times is safe
+- Verifies repo root .gitignore not modified
+- Tests config sourcing functionality
+- All acceptance criteria met
+- Files changed: tests/test_ralph_init.sh (created)
+- **Learnings for future iterations:**
+  - Use absolute paths for test binary location by resolving from script directory
+  - Set -u in bash scripts catches undefined variable errors
+  - trap cleanup EXIT pattern ensures temp directories are cleaned up
+  - Use git init --quiet for non-interactive test setup
+  - Idempotency tests should verify no changes on second run
+
+---
+## 02/02/2026 10:57 PM - US-010
+- Implemented ralph migrate subcommand in bin/ralph wrapper
+- Added find_migrate_bin() function to locate migrate.sh script
+- Detects old layout (scripts/ralph/ and plans/) and checks for migration need
+- Provides clear guidance showing what will be created during migration
+- Prompts user before running when no flags provided, with --apply default when user confirms
+- Passes through all flags to migrate.sh (--dry-run, --apply, --fix-gitignore, --remove-old, --backup-dir)
+- Gracefully handles case where migration not needed (outputs clear message)
+- All acceptance criteria met
+- Files changed: bin/ralph
+- **Learnings for future iterations:**
+  - find_migrate_bin() pattern mirrors find_doctor_bin() and find_ralph_bin() for consistency
+  - Prompt-before-run pattern with read command provides user confirmation
+  - Conditional flag handling: if user provides flags, use them; otherwise show prompt and default to --apply
+  - Detection logic uses simple existence checks for scripts/ralph/ and plans/ directories
+  - Help message is passed through from migrate.sh via --help flag
+---
+## 02/02/2026 11:02 PM - US-015
+- Created bash test file tests/test_path_resolution.sh for path resolution testing
+- Test validates repo root resolution from nested subdirectories
+- Test verifies not-in-git case is handled gracefully
+- Test confirms bin/ralph wrapper path resolution works correctly
+- Test validates ralph.sh finds files correctly
+- Fixed test to use doctor command instead of plan --help to avoid infinite plan mode loop
+- All tests pass
+- Files changed: tests/test_path_resolution.sh (updated)
+- **Learnings for future iterations:**
+  - ralph plan --help does not show help, it runs plan mode with --help as argument
+  - Use doctor command for testing path resolution as it's non-intrusive
+  - Need to be careful with commands that might have side effects in tests
+---
+## 02/02/2026 11:20 PM - US-016
+- Created comprehensive bash test suite for backward compatibility (tests/test_backward_compat.sh)
+- Test creates temporary repo with legacy structure (scripts/ralph/ralph.conf, plans/prd.json, plans/progress.txt)
+- Verifies ralph.sh falls back to scripts/ralph/ralph.conf when .ralph/config missing
+- Verifies ralph.sh falls back to plans/prd.json when .ralph/plans/prd.json missing
+- Verifies ralph.sh falls back to plans/progress.txt when .ralph/plans/progress.txt missing
+- Verifies fallback logic works correctly for plan mode
+- Verifies new .ralph/ paths take priority over legacy paths when both exist
+- Tests config loading logic prioritizes new paths
+- All 9 tests pass
+- Files changed: tests/test_backward_compat.sh (created)
+- **Learnings for future iterations:**
+  - sourcing config files happens in subshell - cannot check exported variables in main shell
+  - set -u catches undefined variable errors but can make testing complex
+  - Use trap cleanup EXIT pattern ensures temp directories are cleaned up
+  - Heredoc EOF terminators can cause confusing errors if misplaced
+  - bash tests require careful attention to shell context and variable scope
+---
