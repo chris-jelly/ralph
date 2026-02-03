@@ -161,3 +161,23 @@ Started (plan mode): Mon 02 Feb 2026 10:32:58 PM EST
 
 <!-- RALPH_CODEBASE_PATTERNS_SUGGESTIONS_END -->
 ---
+## 02/02/2026 11:10 PM - US-014
+- Created comprehensive bash test suite for ralph init command
+- Test creates temporary git repository and runs ralph init
+- Verifies .ralph/config created with correct structure
+- Validates .ralph/.gitignore has nested ignore pattern (*, !config, !.gitignore)
+- Checks .ralph/plans/ and .ralph/plans/archive/ directory creation
+- Verifies specs/README.md template creation
+- Tests idempotency - running init multiple times is safe
+- Verifies repo root .gitignore not modified
+- Tests config sourcing functionality
+- All acceptance criteria met
+- Files changed: tests/test_ralph_init.sh (created)
+- **Learnings for future iterations:**
+  - Use absolute paths for test binary location by resolving from script directory
+  - Set -u in bash scripts catches undefined variable errors
+  - trap cleanup EXIT pattern ensures temp directories are cleaned up
+  - Use git init --quiet for non-interactive test setup
+  - Idempotency tests should verify no changes on second run
+
+---

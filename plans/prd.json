@@ -220,7 +220,7 @@
         "Test passes"
       ],
       "priority": "medium",
-      "passes": false,
+      "passes": true,
       "notes": "Critical for confidence in init command"
     },
     {
