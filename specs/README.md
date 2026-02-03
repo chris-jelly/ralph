@@ -9,9 +9,10 @@ Human-curated documentation for agents working on Ralph itself. Read selectively
 | Spec | Purpose |
 |------|---------|
 | [architecture.md](architecture.md) | System design, component relationships, file flows, key constraints |
+| [repo-layout.md](repo-layout.md) | Canonical `.ralph/` layout, tracked vs transient state, gitignore strategy |
 
-## Conventions
+## Operations
 
 | Spec | Purpose |
 |------|---------|
-| [conventions.md](conventions.md) | Commit format, progress logging, Codebase Patterns suggestion blocks, quality checks |
+| [installation.md](installation.md) | Global install locations, PATH/symlink model, update flow |

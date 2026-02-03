@@ -8,6 +8,8 @@ Each Ralph iteration spawns a fresh AI agent process with no shared memory. All 
 
 Ralph has a **distribution model**: source-of-truth files live in `ralph/`, and `install.sh` copies them into target repos (default: `scripts/ralph/`). When working on Ralph itself, `scripts/ralph/` is the local installation — a consumer copy, not the source.
 
+Ralph is also moving toward a **global install + repo-local state** model. The canonical repo-local state directory is `.ralph/` (see `specs/repo-layout.md`) and the recommended install model is a global tool on `PATH` (see `specs/installation.md`).
+
 ```
 ralph/              # Distribution files (SOURCE OF TRUTH)
   ralph.sh          # Agent loop orchestrator
@@ -33,6 +35,13 @@ flowchart/          # React Flow presentation app (deployed to GitHub Pages)
 ```
 
 **Key rule:** Edit files in `ralph/`, not `scripts/ralph/`. The local installation must be re-synced manually after distribution file changes (no automation for this yet).
+
+## Workflow Conventions
+
+This repo keeps lightweight conventions inline here (instead of a separate spec file):
+
+- Commit messages created by build mode use: `feat: [Story ID] - [Story Title]`
+- Progress logging: progress logs are append-only. If a progress log exists, never replace file contents; only append new story entries.
 
 ## Three Modes
 

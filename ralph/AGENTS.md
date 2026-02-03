@@ -17,7 +17,7 @@ You are an autonomous coding agent working on a software project.
 
 ## Progress Logging
 
-APPEND to .ralph/plans/progress.txt (never replace the file). Use the format from specs/conventions.md if available. At minimum:
+APPEND to .ralph/plans/progress.txt (never replace the file):
 
 ```
 ## [Date/Time] - [Story ID]
