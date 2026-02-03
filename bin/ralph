@@ -1,0 +1,56 @@
+#!/bin/bash
+# Ralph global CLI wrapper entry point
+# This script resolves the repo root and delegates to the ralph.sh engine
+
+set -e
+
+# Function to resolve repo root by walking up directory tree
+find_repo_root() {
+  local dir="$PWD"
+  
+  # Walk up the directory tree until we find .git directory
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/.git" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  
+  return 1
+}
+
+# Resolve repository root
+REPO_ROOT="$(find_repo_root)" || {
+  echo "Error: Not in a git repository" >&2
+  echo "Please run this command from within a git repository" >&2
+  exit 1
+}
+
+# Locate ralph.sh engine script
+# First check if we can find it relative to this script (global install)
+RALPH_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# If ralph.sh is in the same directory as bin/ralph
+if [ -f "$RALPH_SCRIPT/ralph.sh" ]; then
+  RALPH_BIN="$RALPH_SCRIPT/ralph.sh"
+# If ralph.sh is in the parent directory (development layout)
+elif [ -f "$RALPH_SCRIPT/../ralph.sh" ]; then
+  RALPH_BIN="$RALPH_SCRIPT/../ralph.sh"
+# If ralph.sh is in ralph/ directory (distribution layout)
+elif [ -f "$RALPH_SCRIPT/../ralph/ralph.sh" ]; then
+  RALPH_BIN="$RALPH_SCRIPT/../ralph/ralph.sh"
+else
+  echo "Error: Cannot locate ralph.sh engine script" >&2
+  echo "Searched relative to: $RALPH_SCRIPT" >&2
+  exit 1
+fi
+
+# Check if ralph.sh exists and is executable
+if [ ! -x "$RALPH_BIN" ]; then
+  echo "Error: ralph.sh is not executable: $RALPH_BIN" >&2
+  exit 1
+fi
+
+# Delegate all arguments to ralph.sh
+exec "$RALPH_BIN" "$@"
