@@ -212,3 +212,21 @@ Started (plan mode): Mon 02 Feb 2026 10:32:58 PM EST
   - Use doctor command for testing path resolution as it's non-intrusive
   - Need to be careful with commands that might have side effects in tests
 ---
+## 02/02/2026 11:20 PM - US-016
+- Created comprehensive bash test suite for backward compatibility (tests/test_backward_compat.sh)
+- Test creates temporary repo with legacy structure (scripts/ralph/ralph.conf, plans/prd.json, plans/progress.txt)
+- Verifies ralph.sh falls back to scripts/ralph/ralph.conf when .ralph/config missing
+- Verifies ralph.sh falls back to plans/prd.json when .ralph/plans/prd.json missing
+- Verifies ralph.sh falls back to plans/progress.txt when .ralph/plans/progress.txt missing
+- Verifies fallback logic works correctly for plan mode
+- Verifies new .ralph/ paths take priority over legacy paths when both exist
+- Tests config loading logic prioritizes new paths
+- All 9 tests pass
+- Files changed: tests/test_backward_compat.sh (created)
+- **Learnings for future iterations:**
+  - sourcing config files happens in subshell - cannot check exported variables in main shell
+  - set -u catches undefined variable errors but can make testing complex
+  - Use trap cleanup EXIT pattern ensures temp directories are cleaned up
+  - Heredoc EOF terminators can cause confusing errors if misplaced
+  - bash tests require careful attention to shell context and variable scope
+---
