@@ -8,7 +8,7 @@ RALPH_PLANS_DIR="${RALPH_PLANS_DIR:-$RALPH_REPO_DIR/plans}"
 
 # Initialize variables
 TARGET_DIR=""
-USE_LEGACY_INSTALL=false
+RALPH_DIR_NAME=""
 TOOL=""
 MAX_ITERATIONS=""
 
@@ -48,14 +48,14 @@ Usage: $(basename "$0") [OPTIONS]
 Installs Ralph into a target repository.
 
 This script will:
-1. Create the '.ralph/' directory structure in the target repository.
-2. Install Ralph scripts (ralph.sh, doctor.sh, AGENTS files).
+1. Create the 'plans' directory structure.
+2. Install Ralph scripts (ralph.sh, doctor.sh).
 3. Set up the selected AI tool configuration.
-4. Create .ralph/.gitignore with nested ignore pattern.
+4. Update .gitignore with Ralph-specific patterns.
 
 Options:
   --target DIR          Directory to install into (default: current directory)
-  --legacy              Use legacy scripts/ralph installation style for backward compatibility
+  --ralph-dir DIR       Where to create scripts/ralph (default: scripts/ralph)
   --tool TOOL           AI tool to use: opencode, claude, codex (default: opencode)
   --max-iterations N    Maximum iterations for the agent loop (default: 10)
   --help                Show this help message
@@ -64,7 +64,7 @@ Examples:
   # Install to absolute path
   $(basename "$0") --target /home/user/projects/my-repo
 
-  # Use tilde expansion (supported for --target)
+  # Use tilde expansion (supported for --target and --ralph-dir)
   $(basename "$0") --target ~/git/my-repo
 
   # Use environment variables
@@ -73,8 +73,8 @@ Examples:
   # Use relative path (converted to absolute)
   $(basename "$0") --target ../other-repo
 
-  # Legacy installation style (scripts/ralph)
-  $(basename "$0") --legacy
+  # Custom Ralph scripts location
+  $(basename "$0") --target . --ralph-dir ~/custom-ralph
 EOF
 }
 
@@ -86,9 +86,9 @@ while [[ $# -gt 0 ]]; do
             TARGET_DIR="$2"
             shift 2
             ;;
-        --legacy)
-            USE_LEGACY_INSTALL=true
-            shift
+        --ralph-dir)
+            RALPH_DIR_NAME="$2"
+            shift 2
             ;;
         --tool)
             TOOL="$2"
@@ -120,12 +120,9 @@ if [ -t 0 ]; then
         TARGET_DIR="${input:-.}"
     fi
     
-    if [ "$USE_LEGACY_INSTALL" = false ]; then
-        read -p "Use legacy scripts/ralph installation? [n]: " input
-        case "$input" in
-            y|Y|yes|YES) USE_LEGACY_INSTALL=true ;;
-            *) USE_LEGACY_INSTALL=false ;;
-        esac
+    if [ -z "$RALPH_DIR_NAME" ]; then
+        read -p "Directory to create ralph scripts in [scripts/ralph]: " input
+        RALPH_DIR_NAME="${input:-scripts/ralph}"
     fi
     
     if [ -z "$TOOL" ]; then
@@ -150,7 +147,7 @@ fi
 
 # Apply defaults for any remaining empty variables (non-interactive mode)
 TARGET_DIR="${TARGET_DIR:-.}"
-USE_LEGACY_INSTALL="${USE_LEGACY_INSTALL:-false}"
+RALPH_DIR_NAME="${RALPH_DIR_NAME:-scripts/ralph}"
 TOOL="${TOOL:-opencode}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
@@ -170,20 +167,48 @@ if [ -d "$TARGET_DIR" ]; then
     TARGET_DIR=$(cd "$TARGET_DIR" && pwd)
 fi
 
-# Set INSTALL_PATH based on install mode
-if [ "$USE_LEGACY_INSTALL" = true ]; then
-    INSTALL_PATH="$TARGET_DIR/scripts/ralph"
+# Expand RALPH_DIR_NAME
+# Logic: If absolute (after expansion), use as is. If relative, append to TARGET_DIR.
+IS_ABS="no"
+if command -v python3 >/dev/null 2>&1; then
+    IS_ABS=$(python3 -c "import os, sys; path=os.path.expandvars(os.path.expanduser(sys.argv[1])); print('yes' if os.path.isabs(path) else 'no')" "$RALPH_DIR_NAME")
 else
-    INSTALL_PATH="$TARGET_DIR/.ralph"
+    # Fallback checks
+    TEMP_PATH="$RALPH_DIR_NAME"
+    if [[ "$TEMP_PATH" == "~/"* ]]; then
+        TEMP_PATH="${HOME}/${TEMP_PATH:2}"
+    elif [[ "$TEMP_PATH" == "~" ]]; then
+        TEMP_PATH="$HOME"
+    fi
+    
+    if [[ "$TEMP_PATH" == /* ]]; then
+        IS_ABS="yes"
+    fi
+fi
+
+if [ "$IS_ABS" == "yes" ]; then
+    RALPH_DIR_NAME=$(expand_path "$RALPH_DIR_NAME")
+else
+    RALPH_DIR_NAME=$(expand_path "$TARGET_DIR/$RALPH_DIR_NAME")
+fi
+
+# Validation: Check if parent directory of RALPH_DIR_NAME exists (or is inside TARGET_DIR)
+RALPH_PARENT_DIR=$(dirname "$RALPH_DIR_NAME")
+if [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR" ]] || [[ "$RALPH_PARENT_DIR" == "$TARGET_DIR"/* ]]; then
+    # Parent is inside target directory (or is target directory), so we can create it
+    :
+else
+    # Parent is outside target directory, so it must exist
+    if [ ! -d "$RALPH_PARENT_DIR" ]; then
+        echo "Error: Parent directory of '$RALPH_DIR_NAME' does not exist."
+        echo "Directory '$RALPH_PARENT_DIR' must exist for installation outside the target directory."
+        exit 1
+    fi
 fi
 
 echo "Installing Ralph..."
-if [ "$USE_LEGACY_INSTALL" = true ]; then
-    echo "Install mode: Legacy (scripts/ralph)"
-else
-    echo "Install mode: Modern (.ralph/)"
-fi
 echo "Target: $TARGET_DIR"
+echo "Ralph Dir: $RALPH_DIR_NAME"
 echo "Tool: $TOOL"
 echo "Max Iterations: $MAX_ITERATIONS"
 
@@ -194,6 +219,7 @@ if [ ! -d "$TARGET_DIR/.git" ]; then
 fi
 
 # Validation: Check if Ralph is already installed
+INSTALL_PATH="$RALPH_DIR_NAME"
 if [ -d "$INSTALL_PATH" ]; then
     echo "Error: Ralph appears to be already installed at '$INSTALL_PATH'."
     echo "Please remove it or choose a different directory."
@@ -215,25 +241,14 @@ echo "Creating directories..."
 # Create Ralph installation directory
 mkdir -p "$INSTALL_PATH"
 
-# Create plans directory if using modern .ralph structure
-if [ "$USE_LEGACY_INSTALL" = false ]; then
-    mkdir -p "$INSTALL_PATH/plans"
-    mkdir -p "$INSTALL_PATH/plans/archive"
-    # Create .gitkeep for empty plans directory
-    touch "$INSTALL_PATH/plans/.gitkeep"
-else
-    # Legacy: create plans directory in target root
-    mkdir -p "$TARGET_DIR/plans"
-    # Create .gitkeep
-    touch "$TARGET_DIR/plans/.gitkeep"
-fi
-
-# Create specs directory if needed
+# Create plans directory in target root
+mkdir -p "$TARGET_DIR/plans"
 mkdir -p "$TARGET_DIR/specs"
+# Create .gitkeep
+touch "$TARGET_DIR/plans/.gitkeep"
 
-# Create specs/README.md template if not exists
-if [ ! -f "$TARGET_DIR/specs/README.md" ]; then
-    cat << 'EOF' > "$TARGET_DIR/specs/README.md"
+# Create specs/README.md template
+cat << 'EOF' > "$TARGET_DIR/specs/README.md"
 # Project Specifications
 
 Human-curated documentation and guidance for this project. AI agents read these files selectively to understand project patterns, conventions, and requirements.
@@ -263,11 +278,9 @@ Feature-specific context, requirements, and domain knowledge.
 | Spec | Purpose |
 |------|---------|
 EOF
-fi
 
-# Create plans/implementation_plan.md template only for legacy mode
-if [ "$USE_LEGACY_INSTALL" = true ]; then
-    cat << 'EOF' > "$TARGET_DIR/plans/implementation_plan.md"
+# Create plans/implementation_plan.md template
+cat << 'EOF' > "$TARGET_DIR/plans/implementation_plan.md"
 # Implementation Plan
 
 Edit this file with your planning context before running `./ralph.sh plan`.
@@ -285,7 +298,6 @@ List spec files that are relevant to this planning session:
 
 [Provide any context about the current state of the project, recent changes, or blockers]
 EOF
-fi
 
 echo "Copying files from $SOURCE_DIR..."
 
@@ -313,42 +325,49 @@ chmod +x "$INSTALL_PATH/ralph.sh"
 chmod +x "$INSTALL_PATH/doctor.sh"
 
 # Create configuration file
-echo "Creating config..."
-if [ "$USE_LEGACY_INSTALL" = true ]; then
-    cat << EOF > "$INSTALL_PATH/ralph.conf"
+echo "Creating ralph.conf..."
+cat << EOF > "$INSTALL_PATH/ralph.conf"
 # Ralph Configuration
 export RALPH_TOOL="$TOOL"
 export RALPH_MAX_ITERATIONS="$MAX_ITERATIONS"
 EOF
-else
-    cat << EOF > "$INSTALL_PATH/config"
-# Ralph Configuration
-RALPH_TOOL="$TOOL"
-RALPH_MAX_ITERATIONS="$MAX_ITERATIONS"
-EOF
-fi
 
-# Create .ralph/.gitignore with nested ignore pattern (modern mode only)
-if [ "$USE_LEGACY_INSTALL" = false ]; then
-    echo "Creating .ralph/.gitignore..."
-    cat << 'EOF' > "$INSTALL_PATH/.gitignore"
-# Nested ignore pattern: ignore everything except config and .gitignore itself
-*
-!config
-!.gitignore
-EOF
-fi
+# Update .gitignore
+GITIGNORE="$TARGET_DIR/.gitignore"
+echo "Updating .gitignore..."
+
+# Helper function to append line if not exists
+append_if_missing() {
+    local FILE="$1"
+    local LINE="$2"
+    
+    # Create file if it doesn't exist
+    if [ ! -f "$FILE" ]; then
+        touch "$FILE"
+    fi
+    
+    # Check if line exists (exact match)
+    if ! grep -Fxq "$LINE" "$FILE"; then
+        # Ensure newline before appending if file is not empty and doesn't end with newline
+        if [ -s "$FILE" ] && [ "$(tail -c1 "$FILE" | wc -l)" -eq 0 ]; then
+            echo "" >> "$FILE"
+        fi
+        echo "$LINE" >> "$FILE"
+    fi
+}
+
+append_if_missing "$GITIGNORE" ""
+append_if_missing "$GITIGNORE" "# Ralph working files"
+append_if_missing "$GITIGNORE" ".claude/"
+append_if_missing "$GITIGNORE" "plans/prd.json"
+append_if_missing "$GITIGNORE" "plans/progress.txt"
+append_if_missing "$GITIGNORE" "plans/implementation_plan.md"
+append_if_missing "$GITIGNORE" "plans/suggested_spec_changes.md"
+append_if_missing "$GITIGNORE" "plans/.last-branch"
+append_if_missing "$GITIGNORE" "plans/archive/"
 
 # Generate README.md
 echo "Generating README.md..."
-if [ "$USE_LEGACY_INSTALL" = true ]; then
-    PLANS_DIR="../plans/"
-    CMD_PREFIX="./scripts/ralph/"
-else
-    PLANS_DIR="../plans/"
-    CMD_PREFIX=".ralph/"
-fi
-
 cat << EOF > "$INSTALL_PATH/README.md"
 # Ralph - Autonomous Coding Agent
 
@@ -358,8 +377,7 @@ Ralph is an autonomous AI agent loop that works through your PRD items one by on
 
 - **Tool**: $TOOL
 - **Max Iterations**: $MAX_ITERATIONS
-- **Plans Directory**: $PLANS_DIR
-- **Install Mode**: $([ "$USE_LEGACY_INSTALL" = true ] && echo "Legacy (scripts/ralph)" || echo "Modern (.ralph/)")
+- **Plans Directory**: ../plans/
 
 ## Modes
 
@@ -369,7 +387,7 @@ Ralph supports three operational modes:
 Generate a PRD from your implementation plan and specs.
 
 \`\`\`bash
-./${CMD_PREFIX}ralph.sh plan [max_iterations]
+./$RALPH_DIR_NAME/ralph.sh plan [max_iterations]
 \`\`\`
 
 - Reads \`plans/implementation_plan.md\` and relevant \`specs/*.md\` files
@@ -381,7 +399,7 @@ Generate a PRD from your implementation plan and specs.
 Build features from your PRD.
 
 \`\`\`bash
-./${CMD_PREFIX}ralph.sh [max_iterations]
+./$RALPH_DIR_NAME/ralph.sh [max_iterations]
 \`\`\`
 
 - Reads \`plans/prd.json\`
@@ -393,7 +411,7 @@ Build features from your PRD.
 Analyze completed runs and suggest spec changes.
 
 \`\`\`bash
-./${CMD_PREFIX}ralph.sh summary
+./$RALPH_DIR_NAME/ralph.sh summary
 \`\`\`
 
 - Reads \`plans/progress.txt\` and \`plans/prd.json\`
@@ -404,14 +422,14 @@ Analyze completed runs and suggest spec changes.
 
 1. **Write specs** (if applicable): Add spec files to \`specs/\` directory.
 2. **Create implementation plan**: Edit \`plans/implementation_plan.md\` with your context.
-3. **Generate PRD**: Run \`./${CMD_PREFIX}ralph.sh plan\` to create \`plans/prd.json\`.
-4. **Build features**: Review \`plans/prd.json\`, then run \`./${CMD_PREFIX}ralph.sh\` to implement.
-5. **Optional summary**: Run \`./${CMD_PREFIX}ralph.sh summary\` for spec update suggestions.
+3. **Generate PRD**: Run \`./ralph.sh plan\` to create \`plans/prd.json\`.
+4. **Build features**: Review \`plans/prd.json\`, then run \`./ralph.sh\` to implement.
+5. **Optional summary**: Run \`./ralph.sh summary\` for spec update suggestions.
 
 ## Commands
 
-- Run Ralph: \`./${CMD_PREFIX}ralph.sh [mode] [max_iterations]\`
-- Run validation: \`./${CMD_PREFIX}doctor.sh\`
+- Run Ralph: \`./ralph.sh [mode] [max_iterations]\`
+- Run validation: \`./doctor.sh\`
 
 For full documentation, see [Ralph Documentation](https://github.com/example/ralph)
 EOF
@@ -421,5 +439,5 @@ echo "Success! Ralph installed to $INSTALL_PATH"
 echo ""
 echo "Next Steps:"
 echo "1. Edit 'plans/prd.json' to define your project requirements."
-echo "2. Run './${CMD_PREFIX}ralph.sh' to start the agent."
+echo "2. Run './$RALPH_DIR_NAME/ralph.sh' to start the agent."
 echo ""

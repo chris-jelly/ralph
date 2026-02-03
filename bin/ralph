@@ -54,21 +54,6 @@ find_doctor_bin() {
   fi
 }
 
-find_migrate_bin() {
-  # If migrate.sh is in the same directory as bin/ralph
-  if [ -f "$RALPH_SCRIPT/migrate.sh" ]; then
-    echo "$RALPH_SCRIPT/migrate.sh"
-  # If migrate.sh is in the parent directory (development layout)
-  elif [ -f "$RALPH_SCRIPT/../migrate.sh" ]; then
-    echo "$RALPH_SCRIPT/../migrate.sh"
-  # If migrate.sh is in ralph/ directory (distribution layout)
-  elif [ -f "$RALPH_SCRIPT/../ralph/migrate.sh" ]; then
-    echo "$RALPH_SCRIPT/../ralph/migrate.sh"
-  else
-    return 1
-  fi
-}
-
 # Parse subcommand
 SUBCOMMAND="${1:-}"
 shift 2>/dev/null || true
@@ -259,72 +244,9 @@ EOF
       echo "Please run this command from within a git repository" >&2
       exit 1
     }
-
-    MIGRATE_BIN="$(find_migrate_bin)" || {
-      echo "Error: Cannot locate migrate.sh script" >&2
-      echo "Ralph installation may be incomplete" >&2
-      exit 1
-    }
-
-    if [ ! -x "$MIGRATE_BIN" ]; then
-      echo "Error: migrate.sh is not executable: $MIGRATE_BIN" >&2
-      exit 1
-    fi
-
-    # Check if migration is needed
-    OLD_RALPH_DIR="$REPO_ROOT/scripts/ralph"
-    OLD_PLANS_DIR="$REPO_ROOT/plans"
-    NEW_RALPH_DIR="$REPO_ROOT/.ralph"
-    MIGRATION_NEEDED=false
-
-    if [ -d "$OLD_RALPH_DIR" ] || [ -d "$OLD_PLANS_DIR" ]; then
-      MIGRATION_NEEDED=true
-    fi
-
-    if [ "$MIGRATION_NEEDED" = false ]; then
-      echo "No migration needed"
-      echo ""
-      echo "Detected new .ralph/ structure: $NEW_RALPH_DIR"
-      echo "Your installation is already using the modern Ralph layout."
-      echo ""
-      echo "If you believe migration is still needed, you can run:"
-      echo "  ralph migrate [options]"
-      echo ""
-      exit 0
-    fi
-
-    echo "Old Ralph installation detected"
-    echo ""
-    echo "Found:"
-    [ -d "$OLD_RALPH_DIR" ] && echo "  - $OLD_RALPH_DIR"
-    [ -d "$OLD_PLANS_DIR" ] && echo "  - $OLD_PLANS_DIR"
-    echo ""
-    echo "Migration will create:"
-    echo "  - $NEW_RALPH_DIR/"
-    echo "  - $NEW_RALPH_DIR/config"
-    echo "  - $NEW_RALPH_DIR/.gitignore"
-    echo "  - $NEW_RALPH_DIR/plans/"
-
-    # Pass through all arguments to migrate.sh
-    if [ $# -gt 0 ]; then
-      echo ""
-      echo "Running migration with flags: $@"
-      exec "$MIGRATE_BIN" "$@"
-    else
-      # No flags provided - prompt user
-      echo ""
-      read -p "Continue with migration? [y/N] " -n 1 -r
-      echo
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Migration cancelled"
-        echo ""
-        echo "To run migration later, use:"
-        echo "  ralph migrate --apply"
-        echo ""
-        exit 0
-      fi
-      exec "$MIGRATE_BIN" --apply
-    fi
+    echo "Error: 'ralph migrate' command not yet implemented" >&2
+    echo "This feature will be available in a future update" >&2
+    exit 1
     ;;
   --help)
     echo "Usage: ralph <command> [options]"
