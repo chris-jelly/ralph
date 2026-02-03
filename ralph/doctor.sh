@@ -72,23 +72,34 @@ else
     report_fail "AGENTS_summary.md not found in $SCRIPT_DIR" "Re-run install.sh"
 fi
 
-# 5. .ralph/plans/ directory exists
-if [[ -d "$REPO_ROOT/$RALPH_PLANS_DIR" ]]; then
-    echo -e "[$PASS] $RALPH_PLANS_DIR/ directory exists"
+# 5. .ralph/config exists
+if [[ -f "$REPO_ROOT/$RALPH_CONFIG" ]]; then
+    echo -e "[$PASS] $RALPH_CONFIG exists"
 else
-    report_fail "$RALPH_PLANS_DIR directory not found" "Create it with: mkdir -p $REPO_ROOT/$RALPH_PLANS_DIR"
+    report_fail "$RALPH_CONFIG not found" "Run: ralph init or create the config file"
 fi
 
-# 6. .gitignore has Ralph entries
-if [[ -f "$REPO_ROOT/.gitignore" ]]; then
-    # Check for .claude/ or # Ralph
-    if grep -qF ".claude/" "$REPO_ROOT/.gitignore" || grep -qF "# Ralph" "$REPO_ROOT/.gitignore"; then
-        echo -e "[$PASS] .gitignore contains Ralph entries"
+# 6. .ralph/plans/ directory exists and is writable
+if [[ -d "$REPO_ROOT/$RALPH_PLANS_DIR" ]]; then
+    if [[ -w "$REPO_ROOT/$RALPH_PLANS_DIR" ]]; then
+        echo -e "[$PASS] $RALPH_PLANS_DIR/ exists and is writable"
     else
-        report_fail ".gitignore missing Ralph entries" "Add '.claude/' and 'plans/archive/' to .gitignore"
+        report_fail "$RALPH_PLANS_DIR/ is not writable" "Fix permissions: chmod +w $REPO_ROOT/$RALPH_PLANS_DIR"
     fi
 else
-    report_fail ".gitignore not found at repo root" "Create .gitignore and add Ralph entries"
+    report_fail "$RALPH_PLANS_DIR directory not found" "Create it with: ralph init or mkdir -p $REPO_ROOT/$RALPH_PLANS_DIR"
+fi
+
+# 7. .ralph/.gitignore exists with nested ignore pattern
+RALPH_GITIGNORE="$REPO_ROOT/$RALPH_REPO_DIR/.gitignore"
+if [[ -f "$RALPH_GITIGNORE" ]]; then
+    if grep -q '\*' "$RALPH_GITIGNORE" && grep -q 'config' "$RALPH_GITIGNORE" && grep -q '^[!][.]gitignore$' "$RALPH_GITIGNORE"; then
+        echo -e "[$PASS] .ralph/.gitignore has nested ignore pattern"
+    else
+        report_fail ".ralph/.gitignore missing nested ignore pattern" "Should contain: *, !config, !.gitignore"
+    fi
+else
+    report_fail ".ralph/.gitignore not found" "Run: ralph init to create it with nested ignore pattern"
 fi
 
 # Load configuration if exists
@@ -100,7 +111,7 @@ if [ -f "$REPO_ROOT/$RALPH_CONFIG" ] || [ -f "$SCRIPT_DIR/ralph.conf" ]; then
     fi
 fi
 
-# 7. CLI Tool
+# 8. CLI Tool
 TOOL="${RALPH_TOOL:-opencode}"
 if command -v "$TOOL" >/dev/null 2>&1; then
     echo -e "[$PASS] Tool '$TOOL' is installed"
@@ -108,7 +119,7 @@ else
     report_fail "Tool '$TOOL' not found in PATH" "Install '$TOOL' or set RALPH_TOOL environment variable"
 fi
 
-# 8. ralph.sh runs
+# 9. ralph.sh runs
 if [[ -x "$SCRIPT_DIR/ralph.sh" ]]; then
     if "$SCRIPT_DIR/ralph.sh" --help >/dev/null 2>&1; then
         echo -e "[$PASS] ralph.sh runs successfully"
@@ -117,22 +128,22 @@ if [[ -x "$SCRIPT_DIR/ralph.sh" ]]; then
     fi
 fi
 
-# 9. plans/implementation_plan.md (informational only)
-if [[ -f "$REPO_ROOT/plans/implementation_plan.md" ]]; then
+# 10. .ralph/plans/implementation_plan.md (informational only)
+if [[ -f "$REPO_ROOT/$RALPH_PLANS_DIR/implementation_plan.md" ]]; then
     echo -e "[$PASS] implementation_plan.md exists"
 else
     echo "[INFO] implementation_plan.md not found (optional: create for plan mode)"
 fi
 
-# 10. specs/ directory (informational only)
+# 11. specs/ directory and README.md
 if [[ -d "$REPO_ROOT/specs" ]]; then
     if [[ -f "$REPO_ROOT/specs/README.md" ]]; then
-        echo -e "[$PASS] Specs configured"
+        echo -e "[$PASS] Specs configured (specs/README.md exists)"
     else
-        echo "[INFO] specs/ exists but missing README.md index"
+        report_fail "specs/ exists but missing README.md index" "Create specs/README.md for proper spec documentation"
     fi
 else
-    echo "[INFO] No specs/ directory found (optional)"
+    report_fail "specs/ directory not found" "Create specs/ directory and specs/README.md for project specifications"
 fi
 
 if [[ "$FAILED" -eq 0 ]]; then
