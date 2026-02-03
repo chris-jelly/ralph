@@ -70,29 +70,7 @@ RALPH_CONFIG_FILE="$REPO_ROOT/$RALPH_CONFIG"
 # Legacy path constant for backward compatibility (deprecated)
 PLANS_DIR="$REPO_ROOT/$RALPH_PLANS_DIR"
 
-# Determine path fallback for backward compatibility
-# Check for new .ralph/ paths first, fall back to legacy paths if they don't exist
-use_legacy_paths=false
-if [ ! -d "$REPO_ROOT/$RALPH_PLANS_DIR" ] && [ -d "$REPO_ROOT/plans" ]; then
-  use_legacy_paths=true
-  LEGACY_PLANS_DIR="$REPO_ROOT/plans"
-  LEGACY_CONFIG_FILE="$SCRIPT_DIR/ralph.conf"
-fi
-
-# Set file paths based on legacy detection
-if [ "$use_legacy_paths" = true ]; then
-  PRD_FILE="$LEGACY_PLANS_DIR/prd.json"
-  PROGRESS_FILE="$LEGACY_PLANS_DIR/progress.txt"
-  ARCHIVE_DIR="$LEGACY_PLANS_DIR/archive"
-  LAST_BRANCH_FILE="$LEGACY_PLANS_DIR/.last-branch"
-else
-  PRD_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/prd.json"
-  PROGRESS_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/progress.txt"
-  ARCHIVE_DIR="$REPO_ROOT/$RALPH_PLANS_DIR/archive"
-  LAST_BRANCH_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/.last-branch"
-fi
-
-# Load configuration if exists (checked in both old and new locations)
+# Load configuration if exists
 if [ -f "$REPO_ROOT/$RALPH_CONFIG" ] || [ -f "$SCRIPT_DIR/ralph.conf" ]; then
   if [ -f "$REPO_ROOT/$RALPH_CONFIG" ]; then
     source "$REPO_ROOT/$RALPH_CONFIG"
