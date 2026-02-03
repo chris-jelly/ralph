@@ -78,9 +78,101 @@ case "$SUBCOMMAND" in
       echo "Please run this command from within a git repository" >&2
       exit 1
     }
-    echo "Error: 'ralph init' command not yet implemented" >&2
-    echo "This feature will be available in a future update" >&2
-    exit 1
+    RALPH_DIR="$REPO_ROOT/.ralph"
+    RALPH_CONFIG="$RALPH_DIR/config"
+    RALPH_GITIGNORE="$RALPH_DIR/.gitignore"
+    RALPH_PLANS_DIR="$RALPH_DIR/plans"
+    SPECS_README="$REPO_ROOT/specs/README.md"
+
+    echo "Initializing Ralph in $REPO_ROOT"
+
+    # Create .ralph directory if it doesn't exist
+    if [ ! -d "$RALPH_DIR" ]; then
+      mkdir -p "$RALPH_DIR"
+      echo "Created $RALPH_DIR"
+    else
+      echo "$RALPH_DIR already exists"
+    fi
+
+    # Create .ralph/config
+    if [ ! -f "$RALPH_CONFIG" ]; then
+      cat > "$RALPH_CONFIG" << 'EOF'
+# Ralph Configuration
+RALPH_TOOL="opencode"
+RALPH_MAX_ITERATIONS="10"
+EOF
+      echo "Created $RALPH_CONFIG"
+    else
+      echo "$RALPH_CONFIG already exists (not modified)"
+    fi
+
+    # Create .ralph/.gitignore with nested ignore pattern
+    if [ ! -f "$RALPH_GITIGNORE" ]; then
+      cat > "$RALPH_GITIGNORE" << 'EOF'
+# Ignore all files in .ralph/ except config and .gitignore
+*
+!config
+!.gitignore
+EOF
+      echo "Created $RALPH_GITIGNORE"
+    else
+      echo "$RALPH_GITIGNORE already exists (not modified)"
+    fi
+
+    # Create .ralph/plans/ directory structure
+    mkdir -p "$RALPH_PLANS_DIR/archive"
+    echo "Ensured $RALPH_PLANS_DIR exists"
+
+    # Create specs/README.md template if missing
+    if [ ! -f "$SPECS_README" ]; then
+      mkdir -p "$(dirname "$SPECS_README")"
+      cat > "$SPECS_README" << 'EOF'
+# Project Specifications
+
+Human-curated documentation and guidance for this project. AI agents read these files selectively to understand project patterns, conventions, and requirements.
+
+Ralph reads this file before each story to determine which specs are relevant. Add your specs to the appropriate section below, or create new sections as needed.
+
+> **Note:** Ralph never edits files in `specs/`. Specifications are maintained by humans only.
+
+## Architecture
+
+High-level system design, infrastructure, and structural decisions.
+
+| Spec | Purpose |
+|------|---------|
+
+## Conventions
+
+Coding standards, naming patterns, and project-specific rules.
+
+| Spec | Purpose |
+|------|---------|
+
+## Features
+
+Feature-specific context, requirements, and domain knowledge.
+
+| Spec | Purpose |
+|------|---------|
+EOF
+      echo "Created $SPECS_README"
+    else
+      echo "$SPECS_README already exists (not modified)"
+    fi
+
+    echo ""
+    echo "Ralph initialized successfully!"
+    echo ""
+    echo "Configuration file: $RALPH_CONFIG"
+    echo "Edit this file to set your tool and max_iterations."
+    echo ""
+    echo "Next steps:"
+    echo "  1. Edit $RALPH_CONFIG to set your preferred AI tool"
+    echo "  2. Create a PRD at $RALPH_PLANS_DIR/prd.json"
+    echo "  3. Run 'ralph build' to start implementing"
+    echo ""
+    exit 0
     ;;
   plan)
     REPO_ROOT="$(find_repo_root)" || {
