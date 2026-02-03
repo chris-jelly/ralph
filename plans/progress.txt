@@ -198,3 +198,17 @@ Started (plan mode): Mon 02 Feb 2026 10:32:58 PM EST
   - Detection logic uses simple existence checks for scripts/ralph/ and plans/ directories
   - Help message is passed through from migrate.sh via --help flag
 ---
+## 02/02/2026 11:02 PM - US-015
+- Created bash test file tests/test_path_resolution.sh for path resolution testing
+- Test validates repo root resolution from nested subdirectories
+- Test verifies not-in-git case is handled gracefully
+- Test confirms bin/ralph wrapper path resolution works correctly
+- Test validates ralph.sh finds files correctly
+- Fixed test to use doctor command instead of plan --help to avoid infinite plan mode loop
+- All tests pass
+- Files changed: tests/test_path_resolution.sh (updated)
+- **Learnings for future iterations:**
+  - ralph plan --help does not show help, it runs plan mode with --help as argument
+  - Use doctor command for testing path resolution as it's non-intrusive
+  - Need to be careful with commands that might have side effects in tests
+---
