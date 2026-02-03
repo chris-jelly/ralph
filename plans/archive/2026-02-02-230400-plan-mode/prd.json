@@ -34,13 +34,14 @@
     {
       "id": "US-003",
       "title": "Add mode dispatching to bin/ralph wrapper",
-      "description": "Implement subcommand dispatching in bin/ralph to support init, plan, build, summary, and doctor modes. Load .ralph/config if present to get tool and other settings.",
+      "description": "Implement subcommand dispatching in bin/ralph to support init, plan, build, summary, doctor, and migrate modes. Load .ralph/config if present to get tool and other settings.",
       "acceptanceCriteria": [
         "bin/ralph init command works",
         "bin/ralph plan command works",
         "bin/ralph build command works (default)",
         "bin/ralph summary command works",
         "bin/ralph doctor command works",
+        "bin/ralph migrate command works",
         "Loads .ralph/config for tool configuration"
       ],
       "priority": "high",
@@ -111,9 +112,74 @@
       "passes": true,
       "notes": "Health checks for new structure"
     },
-    
     {
       "id": "US-008",
+      "title": "Add backward compatible path fallback to ralph.sh",
+      "description": "Add fallback logic in ralph.sh to read from old paths if new .ralph/ paths don't exist. Fall back to scripts/ralph/ralph.conf if .ralph/config missing, and plans/prd.json if .ralph/plans/prd.json missing.",
+      "acceptanceCriteria": [
+        "ralph.sh checks .ralph/config first, falls back to scripts/ralph/ralph.conf",
+        "ralph.sh checks .ralph/plans/prd.json first, falls back to plans/prd.json",
+        "ralph.sh checks .ralph/plans/progress.txt first, falls back to plans/progress.txt",
+        "Fallback logic works for all file operations",
+        "Backward compatibility maintained"
+      ],
+      "priority": "medium",
+      "passes": true,
+      "notes": "Allows existing repos to continue working"
+    },
+    {
+      "id": "US-009",
+      "title": "Create migrate.sh script for old installations",
+      "description": "Create ralph/migrate.sh distribution script that safely migrates old installations to new .ralph/ structure. Must support --dry-run (default), --apply, --backup-dir, --fix-gitignore, and --remove-old flags.",
+      "acceptanceCriteria": [
+        "migrate.sh with --dry-run shows what would change",
+        "migrate.sh with --apply performs migration safely",
+        "migrate.sh --apply creates .ralph/ structure",
+        "migrate.sh --apply creates .ralph/.gitignore with nested ignore",
+        "migrate.sh --apply copies files from plans/ to .ralph/plans/",
+        "migrate.sh --apply creates .ralph/config from old ralph.conf",
+        "migrate.sh --fix-gitignore cleans up old entries",
+        "migrate.sh --remove-old moves old directories to backup",
+        "migrate.sh refuses to run outside git repo",
+        "migrate.sh shows post-run summary"
+      ],
+      "priority": "high",
+      "passes": true,
+      "notes": "Migration script is critical for existing users"
+    },
+    {
+      "id": "US-010",
+      "title": "Implement ralph migrate subcommand",
+      "description": "Implement the migrate subcommand in bin/ralph wrapper that detects old layout and offers to run migrate.sh. Should also detect if migration is needed and prompt user.",
+      "acceptanceCriteria": [
+        "ralph migrate detects scripts/ralph/ and .ralph/ existence",
+        "ralph migrate prompts user before running",
+        "ralph migrate can invoke migrate.sh with flags",
+        "ralph migrate provides clear guidance",
+        "Migration detection works correctly"
+      ],
+      "priority": "medium",
+      "passes": true,
+      "notes": "User-friendly migration entry point"
+    },
+    {
+      "id": "US-011",
+      "title": "Update install.sh for new .ralph/ structure",
+      "description": "Update install.sh to install to .ralph/ directory structure instead of scripts/ralph/. Create .ralph/.gitignore with nested ignore pattern to avoid modifying repo .gitignore.",
+      "acceptanceCriteria": [
+        "install.sh installs to .ralph/ directory",
+        "install.sh creates .ralph/.gitignore with nested ignore pattern",
+        "install.sh does not modify repo root .gitignore",
+        "install.sh creates .ralph/config file",
+        "install.sh maintains backward compatibility option",
+        "install.sh tests work correctly"
+      ],
+      "priority": "medium",
+      "passes": true,
+      "notes": "Installation needs to create new structure"
+    },
+    {
+      "id": "US-012",
       "title": "Create curl bootstrap script for easy installation",
       "description": "Create a small curl bootstrap script that users can run to install Ralph globally. The script should perform git clone of Ralph repo to ~/.local/share/ralph and create symlink to ~/.local/bin/ralph.",
       "acceptanceCriteria": [
@@ -128,7 +194,7 @@
       "notes": "Optional convenience feature"
     },
     {
-      "id": "US-009",
+      "id": "US-013",
       "title": "Add ralph self-update command",
       "description": "Add self-update subcommand to bin/ralph that runs git pull in the installation directory when Ralph was installed from git clone. Provide clear feedback to user.",
       "acceptanceCriteria": [
@@ -141,7 +207,7 @@
       "notes": "Convenience command for updating"
     },
     {
-      "id": "US-010",
+      "id": "US-014",
       "title": "Create bash tests for ralph init",
       "description": "Create test file tests/test_ralph_init.sh that tests ralph init idempotency, .ralph/.gitignore behavior (only config tracked), and creation of required structure.",
       "acceptanceCriteria": [
@@ -159,7 +225,7 @@
       "notes": "Critical for confidence in init command"
     },
     {
-      "id": "US-011",
+      "id": "US-015",
       "title": "Create bash tests for path resolution",
       "description": "Create test file tests/test_path_resolution.sh that tests repo root resolution from subdirectories and bin/ralph wrapper path resolution.",
       "acceptanceCriteria": [
@@ -172,6 +238,56 @@
       "priority": "medium",
       "passes": true,
       "notes": "Critical for CLI wrapper reliability"
+    },
+    {
+      "id": "US-016",
+      "title": "Create bash tests for backward compatibility",
+      "description": "Create test file tests/test_backward_compat.sh that tests fallback path logic for old paths when new .ralph/ paths don't exist.",
+      "acceptanceCriteria": [
+        "test_backward_compat.sh creates repo with old structure",
+        "Test verifies ralph.sh falls back to scripts/ralph/ralph.conf",
+        "Test verifies ralph.sh falls back to plans/prd.json",
+        "Test verifies fallback works correctly",
+        "Test verifies new paths take priority",
+        "Test passes"
+      ],
+      "priority": "medium",
+      "passes": true,
+      "notes": "Critical for existing repos"
+    },
+    {
+      "id": "US-017",
+      "title": "Create bash tests for migrate.sh",
+      "description": "Create test file tests/test_migrate.sh that tests migrate.sh behavior with various flags (--dry-run, --apply, --fix-gitignore, --remove-old).",
+      "acceptanceCriteria": [
+        "test_migrate.sh creates repo with old structure",
+        "Test --dry-run safely shows changes without applying",
+        "Test --apply creates .ralph/ structure",
+        "Test --apply copies files correctly",
+        "Test --fix-gitignore cleans entries",
+        "Test --remove-old moves directories to backup",
+        "Test refuses to run outside git repo",
+        "Test passes"
+      ],
+      "priority": "medium",
+      "passes": false,
+      "notes": "Critical for migration reliability"
+    },
+    {
+      "id": "US-018",
+      "title": "Update README.md with global install instructions",
+      "description": "Update ralph/README.md with new installation instructions showing both git clone + symlink method and optional curl bootstrap, plus WSL considerations and ralph init usage.",
+      "acceptanceCriteria": [
+        "README.md documents git clone + symlink to ~/.local/share/ralph",
+        "README.md documents optional curl bootstrap script",
+        "README.md documents ralph init command",
+        "README.md documents ralph migrate command",
+        "README.md includes WSL setup notes",
+        "README.md mentions ~/.local/bin on PATH requirement",
+        "README.md is clear and accurate"
+      ],
+      "priority": "low",
+      "notes": "Documentation for users"
     }
   ],
   "metadata": {

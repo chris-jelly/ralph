@@ -67,16 +67,9 @@ ARCHIVE_DIR="$REPO_ROOT/$RALPH_PLANS_DIR/archive"
 LAST_BRANCH_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/.last-branch"
 RALPH_CONFIG_FILE="$REPO_ROOT/$RALPH_CONFIG"
 
-# Legacy path constant for backward compatibility (deprecated)
-PLANS_DIR="$REPO_ROOT/$RALPH_PLANS_DIR"
-
 # Load configuration if exists
-if [ -f "$REPO_ROOT/$RALPH_CONFIG" ] || [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-  if [ -f "$REPO_ROOT/$RALPH_CONFIG" ]; then
-    source "$REPO_ROOT/$RALPH_CONFIG"
-  elif [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-    source "$SCRIPT_DIR/ralph.conf"
-  fi
+if [ -f "$REPO_ROOT/$RALPH_CONFIG" ]; then
+  source "$REPO_ROOT/$RALPH_CONFIG"
 fi
 
 # Plan mode: archive existing files and reset progress

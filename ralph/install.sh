@@ -48,14 +48,14 @@ Usage: $(basename "$0") [OPTIONS]
 Installs Ralph into a target repository.
 
 This script will:
-1. Create the 'plans' directory structure.
+1. Create the .ralph/ directory structure.
 2. Install Ralph scripts (ralph.sh, doctor.sh).
 3. Set up the selected AI tool configuration.
 4. Update .gitignore with Ralph-specific patterns.
 
 Options:
   --target DIR          Directory to install into (default: current directory)
-  --ralph-dir DIR       Where to create scripts/ralph (default: scripts/ralph)
+  --ralph-dir DIR       Where to create ralph directory (default: .ralph)
   --tool TOOL           AI tool to use: opencode, claude, codex (default: opencode)
   --max-iterations N    Maximum iterations for the agent loop (default: 10)
   --help                Show this help message
@@ -121,8 +121,8 @@ if [ -t 0 ]; then
     fi
     
     if [ -z "$RALPH_DIR_NAME" ]; then
-        read -p "Directory to create ralph scripts in [scripts/ralph]: " input
-        RALPH_DIR_NAME="${input:-scripts/ralph}"
+        read -p "Directory to create ralph scripts in [.ralph]: " input
+        RALPH_DIR_NAME="${input:-.ralph}"
     fi
     
     if [ -z "$TOOL" ]; then
@@ -147,7 +147,7 @@ fi
 
 # Apply defaults for any remaining empty variables (non-interactive mode)
 TARGET_DIR="${TARGET_DIR:-.}"
-RALPH_DIR_NAME="${RALPH_DIR_NAME:-scripts/ralph}"
+RALPH_DIR_NAME="${RALPH_DIR_NAME:-.ralph}"
 TOOL="${TOOL:-opencode}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
 
