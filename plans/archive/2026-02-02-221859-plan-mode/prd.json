@@ -1,0 +1,137 @@
+{
+  "project": "ralph",
+  "branchName": "ralph/plan-build-modes",
+  "description": "Add plan/build/summary modes to Ralph. Plan mode reads specs/ and plans/implementation_plan.md to generate prd.json. Build mode is unchanged. Summary mode generates suggested spec changes from progress.txt. Also renames specifications/ to specs/.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Rename specifications/ to specs/ across all distribution files",
+      "description": "As a Ralph user, I want the specs directory to use the shorter 'specs/' name so that paths are more concise and consistent with common conventions.",
+      "acceptanceCriteria": [
+        "All references to 'specifications/' changed to 'specs/' in ralph/AGENTS.md",
+        "install.sh creates specs/ instead of specifications/ and writes specs/AGENTS.md template",
+        "doctor.sh checks for specs/ instead of specifications/",
+        "ralph/README.md references updated to specs/",
+        "No references to 'specifications/' remain in ralph/ distribution files",
+        "Shellcheck passes on modified scripts (if available)"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Clean break, no backward compatibility. Existing installs must rename manually."
+    },
+    {
+      "id": "US-002",
+      "title": "Add mode argument parsing to ralph.sh",
+      "description": "As a Ralph user, I want to run './ralph.sh plan', './ralph.sh summary', or './ralph.sh [N]' so that I can use different operational modes from a single script.",
+      "acceptanceCriteria": [
+        "'./ralph.sh' runs build mode (existing behavior, unchanged)",
+        "'./ralph.sh 20' runs build mode with max 20 iterations",
+        "'./ralph.sh plan' runs plan mode using AGENTS_plan.md as the prompt",
+        "'./ralph.sh plan 5' runs plan mode with max 5 iterations",
+        "'./ralph.sh summary' runs summary mode as a single iteration (no loop)",
+        "'./ralph.sh --help' shows updated usage with all modes documented",
+        "Build mode still uses AGENTS.md as the prompt (unchanged)",
+        "Plan mode archives existing prd.json and progress.txt to plans/archive/ before starting",
+        "Plan mode resets progress.txt with fresh header after archiving",
+        "Summary mode does NOT archive anything",
+        "All existing build-mode behavior preserved exactly (tool selection, COMPLETE detection, sleep between iterations)",
+        "Shellcheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "The archive-on-plan logic replaces the current branch-name-change detection for archiving. When plan mode runs, it always archives first because you're starting a new planning cycle."
+    },
+    {
+      "id": "US-003",
+      "title": "Create AGENTS_plan.md prompt for plan mode",
+      "description": "As an autonomous agent in plan mode, I need instructions to read specs and the implementation plan, search the codebase, and generate prd.json without modifying source code.",
+      "acceptanceCriteria": [
+        "New file ralph/AGENTS_plan.md created",
+        "Instructs agent to read plans/implementation_plan.md for focus and context",
+        "Instructs agent to read referenced specs/*.md files",
+        "Instructs agent to search existing codebase to determine what is already implemented vs what is missing",
+        "Instructs agent to generate plans/prd.json with concrete user stories in the existing prd.json format",
+        "Instructs agent to update plans/implementation_plan.md with findings (what exists, what is missing, blockers discovered)",
+        "Explicitly states: Do NOT modify any source code files",
+        "Explicitly states: Do NOT modify anything in specs/",
+        "Mentions that subagents may be used for parallel codebase search if the tool supports them, capped at a reasonable number",
+        "Uses <promise>COMPLETE</promise> signal when plan is ready",
+        "Instructs agent to read plans/progress.txt Codebase Patterns section if it exists",
+        "No model-specific references (no mentions of Sonnet, Opus, etc.)"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "The implementation_plan.md is human-authored during an interactive session. Plan mode consumes it, enriches it with findings, and produces prd.json."
+    },
+    {
+      "id": "US-004",
+      "title": "Create AGENTS_summary.md prompt for summary mode",
+      "description": "As an autonomous agent in summary mode, I need instructions to analyze the completed run and suggest spec changes without modifying specs directly.",
+      "acceptanceCriteria": [
+        "New file ralph/AGENTS_summary.md created",
+        "Instructs agent to read plans/progress.txt (all entries from the completed run)",
+        "Instructs agent to read plans/prd.json to understand what was built",
+        "Instructs agent to read relevant specs/*.md files",
+        "Instructs agent to generate plans/suggested_spec_changes.md with: specs needing updates, missing specs that should be written, inconsistencies discovered, patterns that should be documented",
+        "Explicitly states: Do NOT modify anything in specs/",
+        "Explicitly states: Do NOT modify any source code files",
+        "Uses <promise>COMPLETE</promise> signal when summary is ready",
+        "No model-specific references"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Summary mode runs as a single iteration, not a loop."
+    },
+    {
+      "id": "US-005",
+      "title": "Update install.sh for new modes and files",
+      "description": "As a user installing Ralph, I want the installer to set up all files needed for plan/build/summary modes including the new prompt files and implementation plan template.",
+      "acceptanceCriteria": [
+        "install.sh copies AGENTS_plan.md and AGENTS_summary.md to the install path alongside AGENTS.md",
+        "install.sh creates plans/implementation_plan.md with a minimal template (header, Goal section, Relevant Specs section, Context section)",
+        "install.sh creates specs/ directory (not specifications/) with the AGENTS.md template",
+        "specs/AGENTS.md template references specs/ not specifications/",
+        "Generated README.md documents all three modes (plan, build, summary) with usage examples",
+        "plans/implementation_plan.md is added to .gitignore entries",
+        "Shellcheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Update doctor.sh for new files and modes",
+      "description": "As a user running health checks, I want doctor.sh to validate the complete plan/build/summary setup so that I know if any prompt files are missing.",
+      "acceptanceCriteria": [
+        "doctor.sh checks for AGENTS_plan.md existence in script directory",
+        "doctor.sh checks for AGENTS_summary.md existence in script directory",
+        "doctor.sh checks for specs/ directory instead of specifications/",
+        "doctor.sh checks for plans/implementation_plan.md (informational, not a failure)",
+        "Missing AGENTS_plan.md or AGENTS_summary.md is a FAIL (required for modes to work)",
+        "Missing implementation_plan.md shows INFO message (optional until user creates it)",
+        "Shellcheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Update documentation for plan/build/summary workflow",
+      "description": "As a Ralph user, I want the README to document the full specs -> plan -> build -> summary workflow so that I understand how to use the new modes.",
+      "acceptanceCriteria": [
+        "ralph/README.md documents the three-layer model: specs/ -> implementation_plan.md -> prd.json",
+        "Documents the full workflow: write specs, create implementation plan interactively, run plan mode, review prd.json, run build mode, optionally run summary mode",
+        "Documents all three modes with CLI examples",
+        "Documents what each mode does and does not do (plan: no code changes, summary: no spec changes)",
+        "Documents the archiving behavior when plan mode runs",
+        "Updates the Specifications section to reference specs/ instead of specifications/",
+        "Keep documentation concise"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

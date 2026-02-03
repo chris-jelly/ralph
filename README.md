@@ -59,12 +59,7 @@ Copy the ralph files into your project:
 ```bash
 # From your project root
 mkdir -p scripts/ralph
-cp /path/to/ralph/ralph.sh scripts/ralph/
-
-# Copy the prompt template for your AI tool of choice:
-cp /path/to/ralph/prompt.md scripts/ralph/prompt.md    # For Amp
-# OR
-cp /path/to/ralph/CLAUDE.md scripts/ralph/CLAUDE.md    # For Claude Code
+cp -r /path/to/ralph/ralph/* scripts/ralph/
 
 chmod +x scripts/ralph/ralph.sh
 ```
@@ -168,8 +163,9 @@ Ralph will:
 | File | Purpose |
 |------|---------|
 | `ralph.sh` | The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`) |
-| `prompt.md` | Prompt template for Amp |
-| `CLAUDE.md` | Prompt template for Claude Code |
+| `AGENTS.md` | Build-mode prompt |
+| `AGENTS_plan.md` | Plan-mode prompt |
+| `AGENTS_summary.md` | Summary-mode prompt |
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `plans/progress.txt` | Append-only learnings for future iterations |
@@ -216,14 +212,11 @@ Too big (split these):
 - "Add authentication"
 - "Refactor the API"
 
-### AGENTS.md Updates Are Critical
+### Progress Logging Is Critical
 
-After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because AI coding tools automatically read these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
+After each iteration, Ralph appends a progress entry to `plans/progress.txt`. This is the primary memory between iterations.
 
-Examples of what to add to AGENTS.md:
-- Patterns discovered ("this codebase uses X for Y")
-- Gotchas ("do not forget to update Z when changing W")
-- Useful context ("the settings panel is in component X")
+If a reusable pattern is discovered, include a Codebase Patterns suggestion block in the progress entry (between the `RALPH_CODEBASE_PATTERNS_SUGGESTIONS_START/END` markers) so summary mode can reliably extract it.
 
 ### Feedback Loops
 
@@ -257,7 +250,7 @@ git log --oneline -10
 
 ## Customizing the Prompt
 
-After copying `prompt.md` (for Amp) or `CLAUDE.md` (for Claude Code) to your project, customize it for your project:
+After installing Ralph into your project, customize the agent prompts for your project:
 - Add project-specific quality check commands
 - Include codebase conventions
 - Add common gotchas for your stack

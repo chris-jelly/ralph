@@ -54,29 +54,15 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/../..")"
-
-# Path constants for .ralph/ structure
-RALPH_REPO_DIR="${RALPH_REPO_DIR:-.ralph}"
-RALPH_CONFIG="${RALPH_CONFIG:-$RALPH_REPO_DIR/config}"
-RALPH_PLANS_DIR="${RALPH_PLANS_DIR:-$RALPH_REPO_DIR/plans}"
-
-# File paths
-PRD_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/prd.json"
-PROGRESS_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/progress.txt"
-ARCHIVE_DIR="$REPO_ROOT/$RALPH_PLANS_DIR/archive"
-LAST_BRANCH_FILE="$REPO_ROOT/$RALPH_PLANS_DIR/.last-branch"
-RALPH_CONFIG_FILE="$REPO_ROOT/$RALPH_CONFIG"
-
-# Legacy path constant for backward compatibility (deprecated)
-PLANS_DIR="$REPO_ROOT/$RALPH_PLANS_DIR"
+PLANS_DIR="$REPO_ROOT/plans"
+PRD_FILE="$PLANS_DIR/prd.json"
+PROGRESS_FILE="$PLANS_DIR/progress.txt"
+ARCHIVE_DIR="$PLANS_DIR/archive"
+LAST_BRANCH_FILE="$PLANS_DIR/.last-branch"
 
 # Load configuration if exists
-if [ -f "$REPO_ROOT/$RALPH_CONFIG" ] || [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-  if [ -f "$REPO_ROOT/$RALPH_CONFIG" ]; then
-    source "$REPO_ROOT/$RALPH_CONFIG"
-  elif [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-    source "$SCRIPT_DIR/ralph.conf"
-  fi
+if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
+  source "$SCRIPT_DIR/ralph.conf"
 fi
 
 # Plan mode: archive existing files and reset progress

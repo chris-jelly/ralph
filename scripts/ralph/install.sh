@@ -1,11 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Path constants for .ralph/ structure
-RALPH_REPO_DIR="${RALPH_REPO_DIR:-.ralph}"
-RALPH_CONFIG="${RALPH_CONFIG:-$RALPH_REPO_DIR/config}"
-RALPH_PLANS_DIR="${RALPH_PLANS_DIR:-$RALPH_REPO_DIR/plans}"
-
 # Initialize variables
 TARGET_DIR=""
 RALPH_DIR_NAME=""

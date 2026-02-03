@@ -11,11 +11,6 @@ FAIL="${RED}FAIL${NC}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Path constants for .ralph/ structure
-RALPH_REPO_DIR="${RALPH_REPO_DIR:-.ralph}"
-RALPH_CONFIG="${RALPH_CONFIG:-$RALPH_REPO_DIR/config}"
-RALPH_PLANS_DIR="${RALPH_PLANS_DIR:-$RALPH_REPO_DIR/plans}"
-
 # Try to find repo root
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -72,11 +67,11 @@ else
     report_fail "AGENTS_summary.md not found in $SCRIPT_DIR" "Re-run install.sh"
 fi
 
-# 5. .ralph/plans/ directory exists
-if [[ -d "$REPO_ROOT/$RALPH_PLANS_DIR" ]]; then
-    echo -e "[$PASS] $RALPH_PLANS_DIR/ directory exists"
+# 5. plans/ directory exists
+if [[ -d "$REPO_ROOT/plans" ]]; then
+    echo -e "[$PASS] plans/ directory exists"
 else
-    report_fail "$RALPH_PLANS_DIR directory not found" "Create it with: mkdir -p $REPO_ROOT/$RALPH_PLANS_DIR"
+    report_fail "plans/ directory not found at $REPO_ROOT/plans" "Create it with: mkdir -p plans"
 fi
 
 # 6. .gitignore has Ralph entries
@@ -92,12 +87,8 @@ else
 fi
 
 # Load configuration if exists
-if [ -f "$REPO_ROOT/$RALPH_CONFIG" ] || [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-    if [ -f "$REPO_ROOT/$RALPH_CONFIG" ]; then
-        source "$REPO_ROOT/$RALPH_CONFIG"
-    elif [ -f "$SCRIPT_DIR/ralph.conf" ]; then
-        source "$SCRIPT_DIR/ralph.conf"
-    fi
+if [ -f "$SCRIPT_DIR/ralph.conf" ]; then
+    source "$SCRIPT_DIR/ralph.conf"
 fi
 
 # 7. CLI Tool
