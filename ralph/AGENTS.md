@@ -4,8 +4,8 @@ You are an autonomous coding agent working on a software project.
 
 ## Your Task
 
-1. Read the PRD at `plans/prd.json`
-2. Read the progress log at `plans/progress.txt` (check for any Codebase Patterns suggestion blocks first)
+1. Read the PRD at `.ralph/plans/prd.json`
+2. Read the progress log at `.ralph/plans/progress.txt` (check for any Codebase Patterns suggestion blocks first)
 3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
 4. Pick the **highest priority** user story where `passes: false`
 5. Check if `specs/README.md` exists. If it does, read it to learn which specifications are relevant to your current story. Read ONLY the specifications listed for this story's context - do not read all specification files.
@@ -13,11 +13,11 @@ You are an autonomous coding agent working on a software project.
 7. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
 8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
 9. Update the PRD to set `passes: true` for the completed story
-10. Append your progress to `plans/progress.txt`
+10. Append your progress to `.ralph/plans/progress.txt`
 
 ## Progress Logging
 
-APPEND to plans/progress.txt (never replace the file). Use the format from specs/conventions.md if available. At minimum:
+APPEND to .ralph/plans/progress.txt (never replace the file). Use the format from specs/conventions.md if available. At minimum:
 
 ```
 ## [Date/Time] - [Story ID]
@@ -67,5 +67,5 @@ If there are still stories with `passes: false`, end your response normally.
 - Work on ONE story per iteration
 - Commit frequently
 - Keep CI green
-- Check for any Codebase Patterns suggestion blocks in plans/progress.txt before starting
+- Check for any Codebase Patterns suggestion blocks in .ralph/plans/progress.txt before starting
 - Do NOT edit anything in the specs/ directory
