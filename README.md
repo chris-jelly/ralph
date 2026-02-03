@@ -5,6 +5,14 @@
 
 This is a fork of [snarktank/ralph](https://github.com/snarktank/ralph), originally based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/). This fork contains significant changes and additions, some of them may even be useful.
 
+## Safety Warning
+
+**Running Ralph outside a sandbox environment is dangerous.** Ralph spawns autonomous AI agents that execute code, modify files, and run shell commands repeatedly without human intervention. Depending on your Codex/Opencode settings (especially auto-approval modes), this can have unintended consequences.
+
+**Recommended:** Run Ralph inside an isolated environment. [DevPod](https://devpod.sh/) is one option for quickly spinning up disposable dev containers.
+
+See the [DevPod CLI quickstart](https://devpod.sh/docs/quickstart/devpod-cli) for more options.
+
 ## Prerequisites
 
 - One of the following AI coding tools installed and authenticated:
