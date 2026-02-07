@@ -9,11 +9,13 @@ This is a fork of [snarktank/ralph](https://github.com/snarktank/ralph), origina
 
 **Running Ralph outside a sandbox environment is dangerous.** Ralph spawns autonomous AI agents that execute code, modify files, and run shell commands repeatedly without human intervention. Depending on your Codex/Opencode settings (especially auto-approval modes), this can have unintended consequences.
 
-**Recommended:** Run Ralph inside an isolated environment. `@devcontainers/cli` is the reference implementation for devcontainer.json.
+**Recommended:** Run Ralph inside an isolated environment using [DevPod](https://devpod.sh/).
 
-Install with: `npm install -g @devcontainers/cli`
+Install with: `curl -L -o devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && sudo install -c -m 0755 devpod /usr/local/bin && rm -f devpod`
 
-See the [devcontainers/cli documentation](https://github.com/devcontainers/cli) for usage information.
+Then start a workspace and SSH in: `devpod up . && devpod ssh .`
+
+See the [DevPod documentation](https://devpod.sh/docs) for usage information.
 
 ## Prerequisites
 
