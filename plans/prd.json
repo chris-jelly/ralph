@@ -125,6 +125,7 @@
         "bootstrap.sh provides clear instructions"
       ],
       "priority": "low",
+      "passes": true,
       "notes": "Optional convenience feature"
     },
     {
@@ -138,6 +139,7 @@
         "ralph self-update handles network errors gracefully"
       ],
       "priority": "low",
+      "passes": true,
       "notes": "Convenience command for updating"
     },
     {

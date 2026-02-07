@@ -2,14 +2,56 @@
 
 Ralph is an autonomous coding agent that implements PRD user stories iteratively using AI coding tools.
 
+## Installation
+
+### One-liner (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chris-jelly/ralph/main/ralph/bootstrap.sh | bash
+```
+
+This clones Ralph to `~/.local/share/ralph/` and symlinks the `ralph` command to `~/.local/bin/ralph`.
+
+### Manual install
+
+```bash
+git clone https://github.com/chris-jelly/ralph.git ~/.local/share/ralph
+mkdir -p ~/.local/bin
+ln -s ~/.local/share/ralph/bin/ralph ~/.local/bin/ralph
+```
+
+Ensure `~/.local/bin` is on your `PATH`.
+
+### Update
+
+```bash
+ralph self-update
+```
+
 ## Quick Start
 
-1. **Write specs** in `specs/` (optional but recommended)
-2. **Create implementation plan** in `plans/implementation_plan.md` (interactive with your goals)
-3. **Run plan mode**: `./ralph.sh plan` to generate `plans/prd.json`
-4. **Review the PRD** and adjust stories if needed
-5. **Run build mode**: `./ralph.sh` to implement the stories
-6. **Optionally run summary mode**: `./ralph.sh summary` to suggest spec improvements
+```bash
+# Initialize Ralph in your project
+cd my-project
+ralph init
+
+# Write specs (optional but recommended)
+# Edit specs/README.md and add spec files to specs/
+
+# Create implementation plan
+# Edit .ralph/plans/implementation_plan.md
+
+# Generate PRD from plan + specs
+ralph plan
+
+# Review and adjust .ralph/plans/prd.json
+
+# Build the stories
+ralph build
+
+# Optionally suggest spec improvements
+ralph summary
+```
 
 ## How It Works
 
@@ -18,12 +60,12 @@ Ralph supports three modes for different phases of development:
 ### Three-Layer Model
 
 1. **Specs (`specs/`)** - Human-curated documentation for project context
-2. **Implementation Plan (`plans/implementation_plan.md`)** - Your interactive goal document
-3. **PRD (`plans/prd.json`)** - AI-generated breakdown into actionable user stories
+2. **Implementation Plan (`.ralph/plans/implementation_plan.md`)** - Your interactive goal document
+3. **PRD (`.ralph/plans/prd.json`)** - AI-generated breakdown into actionable user stories
 
 ### Plan Mode
 
-Reads your implementation plan and specs, searches the codebase to determine what exists vs. what's missing, then generates `plans/prd.json` with prioritized user stories. Also updates `implementation_plan.md` with findings.
+Reads your implementation plan and specs, searches the codebase to determine what exists vs. what's missing, then generates `.ralph/plans/prd.json` with prioritized user stories. Also updates `implementation_plan.md` with findings.
 
 **Does NOT:**
 - Modify source code files
@@ -32,18 +74,18 @@ Reads your implementation plan and specs, searches the codebase to determine wha
 ### Build Mode
 
 Implements the PRD iteratively. Each iteration:
-1. Reads `plans/prd.json` for user stories
+1. Reads `.ralph/plans/prd.json` for user stories
 2. Implements the highest priority incomplete story
 3. Runs quality checks (typecheck, lint, test)
 4. Commits changes with format: `feat: [Story ID] - [Story Title]`
 5. Updates the PRD to mark story as complete
-6. Logs progress to `plans/progress.txt`
+6. Logs progress to `.ralph/plans/progress.txt`
 
 When all stories have `passes: true`, Ralph outputs `<promise>COMPLETE</promise>` and exits.
 
 ### Summary Mode
 
-Analyzes a completed run and suggests improvements to your specs. Reads `plans/progress.txt`, `plans/prd.json`, and relevant `specs/*.md` files, then generates `plans/suggested_spec_changes.md` with recommendations.
+Analyzes a completed run and suggests improvements to your specs. Reads `.ralph/plans/progress.txt`, `.ralph/plans/prd.json`, and relevant `specs/*.md` files, then generates `.ralph/plans/suggested_spec_changes.md` with recommendations.
 
 **Does NOT:**
 - Modify source code files
@@ -70,29 +112,40 @@ specs/
 ## Usage
 
 ```bash
+# Initialize Ralph in a repo
+ralph init
+
 # Build mode (default) - implements PRD stories
-./ralph.sh                 # Max 10 iterations
-./ralph.sh 20             # Max 20 iterations
+ralph build                # Max 10 iterations (default)
+ralph build 20             # Max 20 iterations
 
 # Plan mode - reads implementation plan, generates PRD
-./ralph.sh plan           # Max 10 iterations
-./ralph.sh plan 5         # Max 5 iterations
+ralph plan                 # Max 10 iterations
+ralph plan 5               # Max 5 iterations
 
 # Summary mode - suggests spec improvements from completed run
-./ralph.sh summary        # Single iteration
+ralph summary              # Single iteration
+
+# Health check
+ralph doctor
+
+# Update Ralph
+ralph self-update
 
 # Help
-./ralph.sh --help
+ralph --help
 ```
 
 ## Files
 
-- `ralph.sh` - Main loop script
-- `AGENTS.md` - Instructions given to each AI agent instance
-- `prd.json.example` - Example PRD format
-- `plans/prd.json` - Your project's PRD (you create this)
-- `plans/progress.txt` - Auto-generated progress log
-- `plans/archive/` - Archived PRDs from previous runs
+After running `ralph init`, your repo will have:
+
+- `.ralph/config` - Tool and iteration settings (tracked in git)
+- `.ralph/.gitignore` - Nested ignore so only config is tracked
+- `.ralph/plans/prd.json` - Your project's PRD (generated by plan mode)
+- `.ralph/plans/progress.txt` - Auto-generated progress log
+- `.ralph/plans/archive/` - Archived PRDs from previous runs
+- `specs/README.md` - Index of project specifications
 
 ## PRD Format
 
@@ -129,8 +182,8 @@ See `prd.json.example` for the complete format. Key fields:
 Ralph maintains memory across iterations through:
 
 1. **Git history** - Each story is a separate commit
-2. **`plans/progress.txt`** - Running log of what was done and learned
-3. **`plans/prd.json`** - Updated `passes` status for each story
+2. **`.ralph/plans/progress.txt`** - Running log of what was done and learned
+3. **`.ralph/plans/prd.json`** - Updated `passes` status for each story
 4. **Codebase Patterns suggestions** - Optional blocks embedded in progress entries
 
 Each AI instance starts fresh with clean context, but these files provide continuity.
@@ -139,27 +192,18 @@ Each AI instance starts fresh with clean context, but these files provide contin
 
 ### Archiving
 
-**Plan mode**: Always archives existing `plans/prd.json` and `plans/progress.txt` to `plans/archive/` before starting, creating a fresh planning cycle.
+**Plan mode**: Always archives existing `.ralph/plans/prd.json` and `.ralph/plans/progress.txt` to `.ralph/plans/archive/` before starting, creating a fresh planning cycle.
 
-**Build mode**: When you start a new PRD (different `branchName`), Ralph automatically archives the previous run to `plans/archive/YYYY-MM-DD-branch-name/`.
+**Build mode**: When you start a new PRD (different `branchName`), Ralph automatically archives the previous run to `.ralph/plans/archive/YYYY-MM-DD-branch-name/`.
 
 ### Quality Checks
 
 Ralph expects your project to have quality checks. The AI will run whatever checks make sense for your project (e.g., `npm run typecheck`, `pytest`, `cargo test`).
 
-## Troubleshooting
+## Legacy Installation
 
-**Ralph keeps failing on the same story:**
-- Check `plans/progress.txt` for error patterns
-- Story might be too large - break it into smaller stories
-- Acceptance criteria might be unclear or contradictory
+The old `install.sh` script is deprecated. If you previously installed Ralph per-repo with `install.sh`, you can migrate to the global install:
 
-**Ralph says COMPLETE but stories aren't done:**
-- Check that PRD file is valid JSON
-- Ensure `passes` field exists for each story
-- Verify `plans/prd.json` path is correct
-
-**No progress file generated:**
-- Ensure `plans/` directory exists
-- Check ralph.sh has execute permissions: `chmod +x ralph.sh`
-- Verify you're in a git repository
+1. Install Ralph globally (see Installation above)
+2. Run `ralph init` in your repo
+3. The old `scripts/ralph/` directory can be removed

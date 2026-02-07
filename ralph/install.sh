@@ -112,8 +112,17 @@ done
 
 # Interactive Mode: Prompt for missing values if running in a terminal
 if [ -t 0 ]; then
-    echo "Ralph Installation Setup"
-    echo "========================"
+    echo ""
+    echo "NOTE: install.sh is deprecated."
+    echo "The recommended way to install Ralph is:"
+    echo ""
+    echo "  curl -fsSL https://raw.githubusercontent.com/chris-jelly/ralph/main/ralph/bootstrap.sh | bash"
+    echo "  ralph init"
+    echo ""
+    echo "Continuing with legacy install..."
+    echo ""
+    echo "Ralph Installation Setup (Legacy)"
+    echo "==================================="
     
     if [ -z "$TARGET_DIR" ]; then
         read -p "Target directory to install into [.]: " input

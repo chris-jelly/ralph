@@ -248,16 +248,41 @@ EOF
     echo "This feature will be available in a future update" >&2
     exit 1
     ;;
+  self-update)
+    # Resolve the real path of this script (follow symlinks)
+    SELF="${BASH_SOURCE[0]}"
+    if command -v readlink >/dev/null 2>&1; then
+      SELF="$(readlink -f "$SELF" 2>/dev/null || readlink "$SELF" 2>/dev/null || echo "$SELF")"
+    fi
+    INSTALL_DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+
+    if [ ! -d "$INSTALL_DIR/.git" ]; then
+      echo "Error: Ralph was not installed via git clone." >&2
+      echo "Cannot self-update. Installation directory: $INSTALL_DIR" >&2
+      exit 1
+    fi
+
+    echo "Updating Ralph in $INSTALL_DIR..."
+    if git -C "$INSTALL_DIR" pull --ff-only; then
+      echo "Ralph updated successfully."
+    else
+      echo "Error: Update failed." >&2
+      echo "You may have local changes. Try: git -C $INSTALL_DIR status" >&2
+      exit 1
+    fi
+    exit 0
+    ;;
   --help)
     echo "Usage: ralph <command> [options]"
     echo ""
     echo "Commands:"
-    echo "  build    Build mode: Run AI coding loop to implement PRD (default)"
-    echo "  plan     Plan mode: Read specs/ and generate prd.json"
-    echo "  summary  Summary mode: Generate suggested spec changes"
-    echo "  init     Initialize ralph in a new repo"
-    echo "  doctor   Run health checks"
-    echo "  migrate  Migrate from old Ralph installation"
+    echo "  init          Initialize Ralph in a new repo"
+    echo "  plan          Plan mode: Read specs/ and generate prd.json"
+    echo "  build         Build mode: Run AI coding loop to implement PRD (default)"
+    echo "  summary       Summary mode: Generate suggested spec changes"
+    echo "  doctor        Run health checks"
+    echo "  self-update   Update Ralph to the latest version (git installs only)"
+    echo "  migrate       Migrate from old Ralph installation"
     echo ""
     echo "Use 'ralph <command> --help' for more information on a specific command."
     exit 0
