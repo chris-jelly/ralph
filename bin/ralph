@@ -123,6 +123,32 @@ EOF
     mkdir -p "$RALPH_PLANS_DIR/archive"
     echo "Ensured $RALPH_PLANS_DIR exists"
 
+    # Create .ralph/plans/implementation_plan.md template if missing
+    IMPL_PLAN="$RALPH_PLANS_DIR/implementation_plan.md"
+    if [ ! -f "$IMPL_PLAN" ]; then
+      cat > "$IMPL_PLAN" << 'EOF'
+# Implementation Plan
+
+Edit this file with your planning context before running `ralph plan`.
+
+## Goal
+
+[Describe what you want to accomplish in this planning cycle]
+
+## Relevant Specs
+
+List spec files that are relevant to this planning session:
+- specs/[spec-name].md - [brief description]
+
+## Context
+
+[Provide any context about the current state of the project, recent changes, or blockers]
+EOF
+      echo "Created $IMPL_PLAN"
+    else
+      echo "$IMPL_PLAN already exists (not modified)"
+    fi
+
     # Create specs/README.md template if missing
     if [ ! -f "$SPECS_README" ]; then
       mkdir -p "$(dirname "$SPECS_README")"
@@ -164,13 +190,11 @@ EOF
     echo ""
     echo "Ralph initialized successfully!"
     echo ""
-    echo "Configuration file: $RALPH_CONFIG"
-    echo "Edit this file to set your tool and max_iterations."
-    echo ""
     echo "Next steps:"
     echo "  1. Edit $RALPH_CONFIG to set your preferred AI tool"
-    echo "  2. Create a PRD at $RALPH_PLANS_DIR/prd.json"
-    echo "  3. Run 'ralph build' to start implementing"
+    echo "  2. Edit $IMPL_PLAN with your goals"
+    echo "  3. Run 'ralph plan' to generate a PRD from your plan"
+    echo "  4. Run 'ralph build' to start implementing"
     echo ""
     exit 0
     ;;

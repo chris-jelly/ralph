@@ -115,13 +115,30 @@ if [ ! -f "$TEST_REPO/specs/README.md" ]; then
 fi
 pass "specs/README.md was created"
 
-# Test 10: Verify repo root .gitignore not modified
-echo "Test 10: Verify repo root .gitignore not modified"
+# Test 10: Verify .ralph/plans/implementation_plan.md created
+echo "Test 10: Verify .ralph/plans/implementation_plan.md created"
+if [ ! -f "$TEST_REPO/.ralph/plans/implementation_plan.md" ]; then
+    fail ".ralph/plans/implementation_plan.md was not created"
+fi
+pass ".ralph/plans/implementation_plan.md was created"
+
+# Test 11: Verify implementation_plan.md has expected content
+echo "Test 11: Verify implementation_plan.md has expected content"
+if ! grep -q '## Goal' "$TEST_REPO/.ralph/plans/implementation_plan.md"; then
+    fail "implementation_plan.md does not contain Goal section"
+fi
+if ! grep -q '## Context' "$TEST_REPO/.ralph/plans/implementation_plan.md"; then
+    fail "implementation_plan.md does not contain Context section"
+fi
+pass "implementation_plan.md contains expected sections"
+
+# Test 12: Verify repo root .gitignore not modified
+echo "Test 12: Verify repo root .gitignore not modified"
 ORIGINAL_GITIGNORE_CONTENT=$(cat "$TEST_REPO/.gitignore")
 pass "Captured original .gitignore content"
 
-# Test 11: Running ralph init again is safe (idempotency)
-echo "Test 11: Running ralph init again is safe (idempotency)"
+# Test 13: Running ralph init again is safe (idempotency)
+echo "Test 13: Running ralph init again is safe (idempotency)"
 OUTPUT2=$("$RALPH_BIN" init 2>&1)
 if [ $? -ne 0 ]; then
     fail "ralph init failed on second run: $OUTPUT2"
@@ -142,8 +159,8 @@ if [ "$ORIGINAL_GITIGNORE_CONTENT" != "$GITIGNORE_AFTER" ]; then
 fi
 pass "Repo root .gitignore was not modified on second run (idempotent)"
 
-# Test 12: Verify config sourcing works
-echo "Test 12: Verify config sourcing works"
+# Test 14: Verify config sourcing works
+echo "Test 14: Verify config sourcing works"
 cd "$TEST_REPO"
 # Source the config and verify values are available
 source .ralph/config
