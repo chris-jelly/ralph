@@ -22,7 +22,7 @@ find_repo_root() {
 
 # Locate ralph.sh engine script
 # First check if we can find it relative to this script (global install)
-RALPH_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RALPH_SCRIPT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 find_ralph_bin() {
   # If ralph.sh is in the same directory as bin/ralph
