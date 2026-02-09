@@ -166,38 +166,40 @@ resolve_model() {
 }
 
 # Run AI tool with optional model flag
-# Usage: run_tool <prompt_file> [mode]
+# Usage: run_tool <prompt_content> [mode]
 run_tool() {
-  local prompt_file="$1"
+  local prompt_content="$1"
   local mode="${2:-build}"
   local model
   model=$(resolve_model "$mode")
 
   local model_flag=""
+  local model_value=""
   if [ -n "$model" ]; then
     model_flag="--model"
+    model_value="$model"
   fi
 
   case "$TOOL" in
     opencode)
       if [ -n "$model_flag" ]; then
-        opencode run "$model_flag" "$model" "$prompt_file"
+        echo "$prompt_content" | opencode run "$model_flag" "$model_value" -
       else
-        opencode run "$prompt_file"
+        echo "$prompt_content" | opencode run -
       fi
       ;;
     claude)
       if [ -n "$model_flag" ]; then
-        claude code --message "$(cat "$prompt_file")" "$model_flag" "$model"
+        claude code --message "$prompt_content" "$model_flag" "$model_value"
       else
-        claude code --message "$(cat "$prompt_file")"
+        claude code --message "$prompt_content"
       fi
       ;;
     codex)
       if [ -n "$model_flag" ]; then
-        codex exec "$model_flag" "$model" "$prompt_file"
+        echo "$prompt_content" | codex exec "$model_flag" "$model_value" -
       else
-        codex exec "$prompt_file"
+        echo "$prompt_content" | codex exec -
       fi
       ;;
   esac
@@ -219,7 +221,13 @@ case "$MODE" in
     ;;
 esac
 
-echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL"
+# Get model for display in banner
+CURRENT_MODEL=$(resolve_model "$MODE")
+if [ -n "$CURRENT_MODEL" ]; then
+  echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL (model: $CURRENT_MODEL)"
+else
+  echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL"
+fi
 
 # Summary mode: run once
 if [ "$MODE" = "summary" ]; then
@@ -230,17 +238,7 @@ if [ "$MODE" = "summary" ]; then
   
   AGENT_PROMPT="$(cat "$AGENTS_FILE")"
   
-  case "$TOOL" in
-    opencode)
-      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    claude)
-      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    codex)
-      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-  esac
+  OUTPUT=$(run_tool "$AGENT_PROMPT" "$MODE" 2>&1 | tee /dev/stderr) || true
   
   echo ""
   echo "Summary mode complete."
@@ -258,17 +256,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
   AGENT_PROMPT="$(cat "$AGENTS_FILE")"
 
-  case "$TOOL" in
-    opencode)
-      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    claude)
-      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    codex)
-      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-  esac
+  OUTPUT=$(run_tool "$AGENT_PROMPT" "$MODE" 2>&1 | tee /dev/stderr) || true
   
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
