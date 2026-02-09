@@ -146,6 +146,56 @@ else
     report_fail "specs/ directory not found" "Create specs/ directory and specs/README.md for project specifications"
 fi
 
+# 12. Model Configuration (informational)
+echo "----------------------------------------"
+echo "Model Configuration:"
+
+MODELS_DISPLAYED=0
+
+# Display mode-specific models if set
+if [[ -n "${RALPH_PLAN_MODEL:-}" ]]; then
+    echo "  RALPH_PLAN_MODEL: $RALPH_PLAN_MODEL"
+    MODELS_DISPLAYED=1
+    # Warn if contains spaces
+    if [[ "$RALPH_PLAN_MODEL" =~ [[:space:]] ]]; then
+        echo -e "  ${RED}WARNING${NC}: Model string contains spaces (invalid)"
+    fi
+fi
+
+if [[ -n "${RALPH_BUILD_MODEL:-}" ]]; then
+    echo "  RALPH_BUILD_MODEL: $RALPH_BUILD_MODEL"
+    MODELS_DISPLAYED=1
+    # Warn if contains spaces
+    if [[ "$RALPH_BUILD_MODEL" =~ [[:space:]] ]]; then
+        echo -e "  ${RED}WARNING${NC}: Model string contains spaces (invalid)"
+    fi
+fi
+
+if [[ -n "${RALPH_REVIEW_MODEL:-}" ]]; then
+    echo "  RALPH_REVIEW_MODEL: $RALPH_REVIEW_MODEL"
+    MODELS_DISPLAYED=1
+    # Warn if contains spaces
+    if [[ "$RALPH_REVIEW_MODEL" =~ [[:space:]] ]]; then
+        echo -e "  ${RED}WARNING${NC}: Model string contains spaces (invalid)"
+    fi
+fi
+
+# Display global fallback if set
+if [[ -n "${RALPH_MODEL:-}" ]]; then
+    echo "  RALPH_MODEL (global fallback): $RALPH_MODEL"
+    MODELS_DISPLAYED=1
+    # Warn if contains spaces
+    if [[ "$RALPH_MODEL" =~ [[:space:]] ]]; then
+        echo -e "  ${RED}WARNING${NC}: Model string contains spaces (invalid)"
+    fi
+fi
+
+if [[ $MODELS_DISPLAYED -eq 0 ]]; then
+    echo "  (none configured - using tool defaults)"
+fi
+
+echo "  Fallback chain: RALPH_<MODE>_MODEL → RALPH_MODEL → tool default"
+
 if [[ "$FAILED" -eq 0 ]]; then
     echo "----------------------------------------"
     echo -e "${GREEN}All checks passed!${NC}"
