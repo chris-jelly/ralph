@@ -43,6 +43,25 @@ This repo keeps lightweight conventions inline here (instead of a separate spec 
 - Commit messages created by build mode use: `feat: [Story ID] - [Story Title]`
 - Progress logging: progress logs are append-only. If a progress log exists, never replace file contents; only append new story entries.
 
+## Configuration Conventions
+
+Ralph uses environment variables with a **mode-specific override with global fallback** pattern:
+
+```
+RALPH_<MODE>_VAR → RALPH_VAR → default/empty
+```
+
+This pattern is used for model configuration and is applicable to other settings. It provides granular control per mode while maintaining a sensible fallback.
+
+Example:
+```bash
+RALPH_BUILD_MODEL=codex-mini      # Cheap model for builds
+RALPH_PLAN_MODEL=claude-opus-4    # Smart model for planning
+RALPH_MODEL=claude                # Global fallback for review mode
+```
+
+Environment variables can be set in `.ralph/config` (sourced by ralph.sh) or exported in the shell.
+
 ## Three Modes
 
 Ralph operates in three sequential modes, each with its own AGENTS prompt file:
@@ -75,11 +94,27 @@ The `branchName` field in prd.json is the identity of a run. ralph.sh tracks it 
 
 ## Tool Abstraction
 
-ralph.sh supports multiple AI tools via `RALPH_TOOL` env var (default: `opencode`). Each tool has a different CLI invocation pattern:
+ralph.sh supports multiple AI tools via `RALPH_TOOL` env var (default: `opencode`). Tool invocation is centralized in the `run_tool()` function, which handles CLI differences and optional model configuration.
 
-- `opencode run "$PROMPT"` (Amp CLI, the default)
-- `claude code --message "$PROMPT"` (Claude Code)
-- `codex exec "$PROMPT"` (Codex)
+### Model Resolution
+
+The `resolve_model()` function implements a fallback chain for model configuration:
+
+1. Check mode-specific variable: `RALPH_PLAN_MODEL`, `RALPH_BUILD_MODEL`, or `RALPH_REVIEW_MODEL`
+2. Fall back to global: `RALPH_MODEL`
+3. Fall back to empty string (use tool's default)
+
+When a model is configured, `run_tool()` conditionally adds the `--model` flag. When empty, the flag is omitted entirely (backward compatible with tools that don't support model selection).
+
+### Tool Invocation Patterns
+
+Each tool has a different CLI invocation:
+
+- **opencode**: Accepts prompt via stdin using `echo "$PROMPT" | opencode run -`
+- **claude**: Uses `--message` flag directly: `claude code --message "$PROMPT"`
+- **codex**: Accepts prompt via stdin using `echo "$PROMPT" | codex exec -`
+
+The `run_tool()` function abstracts these differences. When a model is configured, it's passed as `--model "$MODEL"` for all tools.
 
 The entire AGENTS markdown content is passed as a single prompt string. Prompts must be self-contained — no includes or external references.
 

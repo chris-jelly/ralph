@@ -20,6 +20,21 @@ Ralph stores all per-repo state under a single directory at the repo root:
   logs/                   # Not tracked: optional raw run logs
 ```
 
+### Configuration Variables
+
+The `.ralph/config` file is sourced by ralph.sh and can contain environment variable exports. Supported configuration:
+
+**Model Configuration:**
+- `RALPH_PLAN_MODEL` - Model for plan mode
+- `RALPH_BUILD_MODEL` - Model for build mode (iterations)
+- `RALPH_REVIEW_MODEL` - Model for summary/review mode
+- `RALPH_MODEL` - Global fallback for all modes
+
+Pattern: Smart models for plan/review, cheap models for build. See `specs/architecture.md` for the fallback chain behavior.
+
+**Other Configuration:**
+Additional environment variables can be added as needed (tool selection, timeouts, etc).
+
 ### Tracked vs transient
 
 - Tracked in git:
