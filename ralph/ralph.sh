@@ -138,6 +138,71 @@ case "$TOOL" in
     ;;
 esac
 
+# Resolve model based on mode
+# Returns the model name for the given mode, checking RALPH_<MODE>_MODEL first,
+# then falling back to RALPH_MODEL. Returns empty string if no model configured.
+resolve_model() {
+  local mode="$1"
+  local model=""
+
+  case "$mode" in
+    plan)
+      model="${RALPH_PLAN_MODEL:-}"
+      ;;
+    build)
+      model="${RALPH_BUILD_MODEL:-}"
+      ;;
+    review)
+      model="${RALPH_REVIEW_MODEL:-}"
+      ;;
+  esac
+
+  # Fall back to global RALPH_MODEL if mode-specific not set
+  if [ -z "$model" ]; then
+    model="${RALPH_MODEL:-}"
+  fi
+
+  echo "$model"
+}
+
+# Run AI tool with optional model flag
+# Usage: run_tool <prompt_file> [mode]
+run_tool() {
+  local prompt_file="$1"
+  local mode="${2:-build}"
+  local model
+  model=$(resolve_model "$mode")
+
+  local model_flag=""
+  if [ -n "$model" ]; then
+    model_flag="--model"
+  fi
+
+  case "$TOOL" in
+    opencode)
+      if [ -n "$model_flag" ]; then
+        opencode run "$model_flag" "$model" "$prompt_file"
+      else
+        opencode run "$prompt_file"
+      fi
+      ;;
+    claude)
+      if [ -n "$model_flag" ]; then
+        claude code --message "$(cat "$prompt_file")" "$model_flag" "$model"
+      else
+        claude code --message "$(cat "$prompt_file")"
+      fi
+      ;;
+    codex)
+      if [ -n "$model_flag" ]; then
+        codex exec "$model_flag" "$model" "$prompt_file"
+      else
+        codex exec "$prompt_file"
+      fi
+      ;;
+  esac
+}
+
 # Select AGENTS file based on mode
 case "$MODE" in
   plan)
