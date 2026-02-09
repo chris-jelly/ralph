@@ -189,6 +189,62 @@ Ralph maintains memory across iterations through:
 
 Each AI instance starts fresh with clean context, but these files provide continuity.
 
+## Model Configuration
+
+Ralph supports configuring different AI models for each mode. This allows you to use smarter (more expensive) models for planning and review, while using cheaper models for the build phase.
+
+### Environment Variables
+
+Configure models using environment variables in your `.ralph/config`:
+
+- `RALPH_PLAN_MODEL` - Model to use for plan mode
+- `RALPH_BUILD_MODEL` - Model to use for build mode
+- `RALPH_REVIEW_MODEL` - Model to use for summary mode
+- `RALPH_MODEL` - Global fallback for all modes
+
+### Fallback Chain
+
+Models are resolved in this order:
+
+```
+RALPH_<MODE>_MODEL → RALPH_MODEL → tool default
+```
+
+For example, when running `ralph build`:
+1. Check `RALPH_BUILD_MODEL`
+2. If not set, check `RALPH_MODEL`
+3. If still not set, let the tool use its default model
+
+### Example Configuration
+
+```bash
+# .ralph/config
+
+# Use powerful model for planning (complex reasoning)
+RALPH_PLAN_MODEL=claude-sonnet-4-20250514
+
+# Use cheap model for building (many iterations)
+RALPH_BUILD_MODEL=codex-mini
+
+# Use powerful model for review (thorough analysis)
+RALPH_REVIEW_MODEL=claude-sonnet-4-20250514
+
+# Global fallback (if no mode-specific model set)
+# RALPH_MODEL=claude-3-5-sonnet
+
+TOOL=claude
+```
+
+### Supported Tools and Models
+
+| Tool | Model Flag | Example Models |
+|------|-----------|----------------|
+| `claude` | `--model` | claude-opus-4, claude-sonnet-4, claude-3-5-sonnet |
+| `opencode` | `--model` | claude-sonnet-4-20250514, codex-mini |
+| `codex` | `--model` | codex-mini, codex-cursor |
+
+Run `ralph doctor` to see your currently configured models.
+
 ## Advanced
 
 ### Archiving

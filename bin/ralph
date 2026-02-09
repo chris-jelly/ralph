@@ -100,6 +100,16 @@ case "$SUBCOMMAND" in
 # Ralph Configuration
 RALPH_TOOL="opencode"
 RALPH_MAX_ITERATIONS="10"
+
+# Model Configuration (optional)
+# Configure different AI models for each Ralph mode.
+# Fallback chain: RALPH_<MODE>_MODEL → RALPH_MODEL → tool default
+#
+# Examples:
+# RALPH_PLAN_MODEL="claude-sonnet-4"      # Smart model for planning
+# RALPH_BUILD_MODEL="codex-mini"          # Cheap model for building
+# RALPH_REVIEW_MODEL="claude-opus-4"    # Powerful model for review
+# RALPH_MODEL="claude-sonnet-4"         # Global fallback for all modes
 EOF
       echo "Created $RALPH_CONFIG"
     else

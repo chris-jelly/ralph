@@ -138,6 +138,73 @@ case "$TOOL" in
     ;;
 esac
 
+# Resolve model based on mode
+# Returns the model name for the given mode, checking RALPH_<MODE>_MODEL first,
+# then falling back to RALPH_MODEL. Returns empty string if no model configured.
+resolve_model() {
+  local mode="$1"
+  local model=""
+
+  case "$mode" in
+    plan)
+      model="${RALPH_PLAN_MODEL:-}"
+      ;;
+    build)
+      model="${RALPH_BUILD_MODEL:-}"
+      ;;
+    review)
+      model="${RALPH_REVIEW_MODEL:-}"
+      ;;
+  esac
+
+  # Fall back to global RALPH_MODEL if mode-specific not set
+  if [ -z "$model" ]; then
+    model="${RALPH_MODEL:-}"
+  fi
+
+  echo "$model"
+}
+
+# Run AI tool with optional model flag
+# Usage: run_tool <prompt_content> [mode]
+run_tool() {
+  local prompt_content="$1"
+  local mode="${2:-build}"
+  local model
+  model=$(resolve_model "$mode")
+
+  local model_flag=""
+  local model_value=""
+  if [ -n "$model" ]; then
+    model_flag="--model"
+    model_value="$model"
+  fi
+
+  case "$TOOL" in
+    opencode)
+      if [ -n "$model_flag" ]; then
+        echo "$prompt_content" | opencode run "$model_flag" "$model_value" -
+      else
+        echo "$prompt_content" | opencode run -
+      fi
+      ;;
+    claude)
+      if [ -n "$model_flag" ]; then
+        claude code --message "$prompt_content" "$model_flag" "$model_value"
+      else
+        claude code --message "$prompt_content"
+      fi
+      ;;
+    codex)
+      if [ -n "$model_flag" ]; then
+        echo "$prompt_content" | codex exec "$model_flag" "$model_value" -
+      else
+        echo "$prompt_content" | codex exec -
+      fi
+      ;;
+  esac
+}
+
 # Select AGENTS file based on mode
 case "$MODE" in
   plan)
@@ -154,7 +221,13 @@ case "$MODE" in
     ;;
 esac
 
-echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL"
+# Get model for display in banner
+CURRENT_MODEL=$(resolve_model "$MODE")
+if [ -n "$CURRENT_MODEL" ]; then
+  echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL (model: $CURRENT_MODEL)"
+else
+  echo "Starting Ralph ($MODE_DISPLAY mode) using $TOOL"
+fi
 
 # Summary mode: run once
 if [ "$MODE" = "summary" ]; then
@@ -165,17 +238,7 @@ if [ "$MODE" = "summary" ]; then
   
   AGENT_PROMPT="$(cat "$AGENTS_FILE")"
   
-  case "$TOOL" in
-    opencode)
-      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    claude)
-      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    codex)
-      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-  esac
+  OUTPUT=$(run_tool "$AGENT_PROMPT" "$MODE" 2>&1 | tee /dev/stderr) || true
   
   echo ""
   echo "Summary mode complete."
@@ -193,17 +256,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
   AGENT_PROMPT="$(cat "$AGENTS_FILE")"
 
-  case "$TOOL" in
-    opencode)
-      OUTPUT=$(opencode run "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    claude)
-      OUTPUT=$(claude code --message "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-    codex)
-      OUTPUT=$(codex exec "$AGENT_PROMPT" 2>&1 | tee /dev/stderr) || true
-      ;;
-  esac
+  OUTPUT=$(run_tool "$AGENT_PROMPT" "$MODE" 2>&1 | tee /dev/stderr) || true
   
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
